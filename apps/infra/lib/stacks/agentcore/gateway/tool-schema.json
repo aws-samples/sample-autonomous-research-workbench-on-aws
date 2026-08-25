@@ -1,0 +1,58 @@
+[
+  {
+    "name": "update_project_brief",
+    "description": "Save one or more fields of the current project's research brief. Call this incrementally as each detail is confirmed with the human — the saved record, not the chat transcript, is the source of truth the project activates from. Pass only the fields you are updating; omitted fields are left unchanged. The project is determined by the request context, not by any argument.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Short, human-readable project title (<= 60 chars)."
+        },
+        "seedHypothesis": {
+          "type": "string",
+          "description": "A single, crisp, testable, falsifiable scientific hypothesis."
+        },
+        "objective": {
+          "type": "string",
+          "description": "Objective & success criteria: what a successful outcome looks like and how it will be judged (e.g. a go/no-go on ligandability, a lead series meeting a potency/selectivity/DMPK bar)."
+        },
+        "budgetUsd": {
+          "type": "number",
+          "description": "Hard budget cap in US dollars for the project's AI agents. A positive number only (e.g. 100, 250.50) — no currency symbols or prose. Every project starts at $100; update this only when the human confirms a different amount. The platform enforces it: once agent spend reaches the cap, all agents stop until it is raised."
+        },
+        "checkInCadence": {
+          "type": "string",
+          "description": "How often and at which gates the agents must pause for human review or approval."
+        },
+        "flags": {
+          "type": "string",
+          "description": "Flags & watch-outs: conditions that should trigger an out-of-band alert or halt, independent of the regular cadence."
+        },
+        "contextNotes": {
+          "type": "string",
+          "description": "Context & constraints: target/protein of interest, known data or prior art, hard timeline/milestones, modality, and any explicit out-of-scope areas."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "get_project_brief",
+    "description": "Read the current project's saved research brief, so you can reflect the persisted state back to the human or check what has already been captured. The project is determined by the request context, not by any argument.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "list_available_agents",
+    "description": "List the specialist agents that exist in the platform and can be assigned to this project. Use this to ground your staffing suggestions in the agents that actually exist — recommend a sensible subset for the hypothesis in the chat and explain why each fits. You do not assign agents; the human makes the assignment manually in the UI. Returns each agent's id, displayName, description, and tools.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
+]

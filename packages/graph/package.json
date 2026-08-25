@@ -1,0 +1,25 @@
+{
+  "name": "@repo/graph",
+  "version": "1.0.0",
+  "description": "Knowledge-graph client shared by the API (oRPC) and the agent runtime: Bolt driver (Memgraph dev / Neptune SigV4 prod), Neptune-dialect openCypher queries, and the viewer graph types.",
+  "type": "module",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/credential-providers": "^3.972.56",
+    "neo4j-driver": "^5.28.0",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.9.3"
+  }
+}

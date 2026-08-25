@@ -1,0 +1,24 @@
+{
+  "name": "@repo/queue",
+  "version": "1.0.0",
+  "description": "Run dispatch layer for the multi-agent system: hands { runId } pointers to Bedrock AgentCore (InvokeAgentRuntime) or a local agentcore server. Postgres is the source of truth for run state.",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agentcore": "^3.1075.0",
+    "@aws-sdk/client-scheduler": "^3.1075.0",
+    "@repo/database": "workspace:*"
+  }
+}

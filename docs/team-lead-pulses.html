@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team Lead &amp; the Three Pulses — Animated Walkthrough</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2330;
+    --border: #2d3646;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+
+  header {
+    padding: 64px 24px 40px; text-align: center;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(188,140,255,.16), transparent),
+      radial-gradient(ellipse 40% 60% at 80% 0%, rgba(88,166,255,.10), transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  header p.sub { color: var(--muted); margin-top: 10px; max-width: 760px; margin-left: auto; margin-right: auto; }
+  .keyline {
+    display: inline-block; margin-top: 22px; padding: 10px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--purple); font-weight: 600;
+  }
+  nav.crumbs { padding: 14px 24px; font-size: .82rem; color: var(--muted); }
+  nav.crumbs a { color: var(--accent); text-decoration: none; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 24px 120px; }
+  section { margin-top: 72px; }
+  section > h2 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  section > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+    background: rgba(188,140,255,.15); color: var(--purple); font-size: .9rem;
+  }
+  section > p.lead { color: var(--muted); margin-top: 8px; max-width: 840px; }
+  .panel { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+
+  /* file chips */
+  .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .72rem;
+    color: var(--cyan); cursor: pointer; transition: border-color .2s;
+  }
+  .file-chip:hover { border-color: var(--cyan); }
+  .file-chip::before { content: "📄"; font-size: .8rem; }
+  .file-chip.copied { border-color: var(--green); color: var(--green); }
+  .file-chip.copied::after { content: " copied"; color: var(--green); font-size: .68rem; }
+
+  /* badges */
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    border: 1px solid transparent; white-space: nowrap; transition: all .4s;
+  }
+  .badge.working { background: rgba(88,166,255,.14); color: var(--accent); border-color: rgba(88,166,255,.4); }
+  .badge.idle    { background: rgba(139,152,169,.14); color: var(--muted); border-color: rgba(139,152,169,.35); }
+  .badge.blocked { background: rgba(248,81,73,.14); color: var(--red); border-color: rgba(248,81,73,.4); }
+  .badge.pulse-started { background: rgba(63,185,80,.14); color: var(--green); border-color: rgba(63,185,80,.4); }
+  .badge.pulse-skipped { background: rgba(210,153,34,.14); color: var(--yellow); border-color: rgba(210,153,34,.4); }
+
+  /* walkthrough grid */
+  .walk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .walk-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .tbl { color: var(--cyan); font-family: "SF Mono", ui-monospace, Menlo, monospace; text-transform: none; letter-spacing: 0; font-size: .76rem; }
+
+  /* roster */
+  .roster { display: flex; flex-direction: column; gap: 10px; }
+  .persona {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+    transition: border-color .4s;
+  }
+  .persona.flash { animation: pflash 1s ease; }
+  @keyframes pflash { 0% { border-color: var(--accent); } 100% { border-color: var(--border); } }
+  .persona .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem;
+  }
+  .persona .pname { font-weight: 600; font-size: .88rem; flex: 1; }
+  .persona .pname small { display: block; color: var(--muted); font-weight: 400; font-size: .72rem; }
+
+  /* knowledge pool */
+  .pool-wrap { position: relative; height: 190px; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .pool-fill {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 0%;
+    background: linear-gradient(180deg, rgba(57,197,207,.32), rgba(57,197,207,.14));
+    border-top: 2px solid var(--cyan);
+    transition: height .8s cubic-bezier(.4,0,.2,1);
+  }
+  .pool-count {
+    position: absolute; top: 10px; left: 14px; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    font-size: .78rem; color: var(--cyan);
+  }
+  .watermark {
+    position: absolute; left: 0; right: 0; bottom: 0%; height: 0;
+    border-top: 2px dashed var(--yellow);
+    transition: bottom .8s cubic-bezier(.4,0,.2,1);
+  }
+  .watermark::after {
+    content: "watermark"; position: absolute; right: 8px; top: -18px;
+    font-size: .64rem; color: var(--yellow); font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  .pool-items { position: absolute; bottom: 8px; left: 10px; right: 10px; display: flex; flex-wrap: wrap-reverse; gap: 5px; align-content: flex-start; }
+  .knode {
+    padding: 2px 8px; border-radius: 6px; font-size: .62rem; font-weight: 600;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; animation: kpop .5s ease;
+  }
+  .knode.obs { background: rgba(57,197,207,.18); color: var(--cyan); border: 1px solid rgba(57,197,207,.4); }
+  .knode.hyp { background: rgba(188,140,255,.18); color: var(--purple); border: 1px solid rgba(188,140,255,.4); }
+  .knode.below { opacity: .28; }
+  @keyframes kpop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pool-legend { display: flex; gap: 14px; margin-top: 8px; color: var(--muted); font-size: .7rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+
+  /* pulse gate */
+  .pulse-gate { display: flex; flex-direction: column; gap: 8px; min-height: 100px; font-size: .8rem; }
+  .pulse-row { display: flex; align-items: center; gap: 10px; animation: kpop .4s ease; }
+  .pulse-row .ptime { color: #4a5568; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .7rem; width: 46px; flex: 0 0 auto; }
+  .pulse-row .preason { color: var(--muted); font-size: .74rem; }
+
+  /* lead chat */
+  .leadlog { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; font-size: .8rem; }
+  .msg { padding: 9px 12px; border-radius: 10px; max-width: 94%; animation: kpop .4s ease; }
+  .msg.auto { background: rgba(210,153,34,.09); border: 1px solid rgba(210,153,34,.3); align-self: flex-start; }
+  .msg.auto .who { color: var(--yellow); }
+  .msg.lead { background: rgba(88,166,255,.09); border: 1px solid rgba(88,166,255,.3); align-self: flex-end; }
+  .msg.lead .who { color: var(--accent); }
+  .msg .who { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .msg .body { color: var(--text); font-size: .78rem; }
+  .msg .body code { background: rgba(88,166,255,.12); padding: 0 5px; border-radius: 4px; font-size: .9em; }
+
+  /* caption + controls */
+  .caption {
+    margin-top: 18px; padding: 18px 20px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(188,140,255,.08), rgba(188,140,255,.03));
+    border: 1px solid rgba(188,140,255,.25); min-height: 96px;
+  }
+  .caption .stage { color: var(--purple); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+  .caption p { margin-top: 6px; font-size: .95rem; }
+  .caption p code { background: rgba(188,140,255,.12); padding: 1px 6px; border-radius: 5px; font-size: .85em; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  button.ctl {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 22px; font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  button.ctl:hover:not(:disabled) { border-color: var(--purple); background: rgba(188,140,255,.1); }
+  button.ctl:disabled { opacity: .35; cursor: default; }
+  button.ctl.primary { background: var(--purple); color: #0d1117; border-color: var(--purple); }
+  button.ctl.primary:hover:not(:disabled) { background: #d2b4ff; }
+  .progress { flex: 1; display: flex; gap: 5px; min-width: 160px; }
+  .progress .tick { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background .3s; }
+  .progress .tick.done { background: var(--purple); }
+  .stepcount { color: var(--muted); font-size: .8rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82em; background: var(--panel2); }
+
+  /* three pulse cards */
+  .pulse-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 18px; }
+  .pcard { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+  .pcard .icon { font-size: 1.6rem; }
+  .pcard h4 { margin-top: 8px; font-size: 1rem; }
+  .pcard .trigger { color: var(--muted); font-size: .78rem; margin-top: 6px; }
+  .pcard .trait { margin-top: 10px; font-size: .74rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; padding: 4px 10px; border-radius: 6px; display: inline-block; }
+  .pcard .trait.deb { background: rgba(210,153,34,.12); color: var(--yellow); }
+  .pcard .trait.nodeb { background: rgba(248,81,73,.12); color: var(--red); }
+  .pcard .trait.sched { background: rgba(88,166,255,.12); color: var(--accent); }
+  .pcard p { color: var(--muted); font-size: .8rem; margin-top: 10px; }
+  .pcard p code { background: rgba(88,166,255,.12); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+
+  /* gauntlet */
+  .gauntlet { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+  .gstep {
+    display: flex; align-items: flex-start; gap: 14px; padding: 12px 0;
+    opacity: .3; transition: opacity .4s;
+  }
+  .gstep.on { opacity: 1; }
+  .gstep .gdot {
+    width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 700;
+    background: var(--panel2); border: 1.5px solid var(--border); transition: all .4s;
+  }
+  .gstep.on .gdot { border-color: var(--purple); color: var(--purple); }
+  .gstep.on.pass .gdot { border-color: var(--green); color: var(--green); background: rgba(63,185,80,.1); }
+  .gstep.on.stop .gdot { border-color: var(--red); color: var(--red); background: rgba(248,81,73,.1); }
+  .gstep .gbody b { font-size: .9rem; }
+  .gstep .gbody p { color: var(--muted); font-size: .78rem; margin-top: 2px; max-width: 700px; }
+  .gstep .gbody p code { background: rgba(88,166,255,.12); padding: 0 5px; border-radius: 4px; font-size: .88em; }
+  .gverdict { margin-top: 10px; font-size: .84rem; font-weight: 600; min-height: 1.6em; }
+
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 40px 0 60px; border-top: 1px solid var(--border); margin-top: 80px; }
+</style>
+</head>
+<body>
+
+<nav class="crumbs"><a href="index.html">← All animations</a></nav>
+
+<header>
+  <h1>Team Lead &amp; the Three Pulses</h1>
+  <p class="sub">The research loop: persona agents write observations and hypotheses to the knowledge graph, and the Team Lead is pulsed at the right moments to judge <em>sufficiency</em> — wait, run a contribution round, ask the owner, or conclude the project.</p>
+  <div class="keyline">Pulses never advance the watermark. Only the lead's sufficiency decision does.</div>
+</header>
+
+<main>
+
+<!-- ══════════════ 1. THE THREE PULSES ══════════════ -->
+<section id="pulses">
+  <h2><span class="num">1</span> Three pulses, one entry point</h2>
+  <p class="lead">All three converge on <code class="mono">startLeadPulse()</code> — same lazy thread creation, same busy-lead guard, same budget gate.</p>
+  <div class="pulse-cards">
+    <div class="pcard">
+      <div class="icon">⏰</div>
+      <h4>Scheduled heartbeat</h4>
+      <div class="trigger">EventBridge Scheduler fires daily per project (<code class="mono">project-heartbeat-&lt;id&gt;</code>)</div>
+      <span class="trait sched">fallback sweep</span>
+      <p>The safety net: catches knowledge trickling in below the sufficiency bar, missed pulses, and stuck agents. The schedule itself is the config source of truth — "stopped" just means <code>State: DISABLED</code>, never deleted.</p>
+    </div>
+    <div class="pcard">
+      <div class="icon">🧠</div>
+      <h4>Knowledge pulse</h4>
+      <div class="trigger">A persona's root run reaches terminal AND new knowledge exists past the watermark</div>
+      <span class="trait deb">5-min cooldown while agents still working</span>
+      <p>Fired from <code>onChildTerminal</code> → <code>maybeKnowledgePulse</code>. Bursts of finishes collapse into one pulse — nothing is lost because counts are cumulative until the lead acts.</p>
+    </div>
+    <div class="pcard">
+      <div class="icon">🌙</div>
+      <h4>Quiescence pulse</h4>
+      <div class="trigger">The roster just went fully idle with nothing new since the last decision</div>
+      <span class="trait nodeb">never debounced</span>
+      <p>With no runs left to finish, this may be the loop's <em>last signal</em> — the lead must get the chance to start another round or conclude the project.</p>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/heartbeat.ts">packages/agent/core/orchestration/heartbeat.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/knowledge.ts">packages/agent/core/orchestration/knowledge.ts</span>
+    <span class="file-chip" data-path="packages/queue/heartbeat-schedule.ts">packages/queue/heartbeat-schedule.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/run-terminal.ts">apps/worker/src/run-terminal.ts</span>
+  </div>
+</section>
+
+<!-- ══════════════ 2. THE RESEARCH LOOP, STEP BY STEP ══════════════ -->
+<section id="loop">
+  <h2><span class="num">2</span> The research loop, step by step</h2>
+  <p class="lead">Three personas — Ada (docking), Bo (literature), Cy (assays) — research and record reasoning. Watch the pool fill, pulses fire or get skipped, and the watermark move only on the lead's decision.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Project roster <span class="tbl">project_agent</span></h3>
+      <div class="roster" id="l-roster"></div>
+      <h3 style="margin-top:18px">Pulse gate <span class="tbl">maybeKnowledgePulse / startLeadPulse</span></h3>
+      <div class="pulse-gate" id="l-gate"></div>
+    </div>
+
+    <div class="card">
+      <h3>Knowledge pool <span class="tbl">:Observation / :Hypothesis in Neptune</span></h3>
+      <div class="pool-wrap">
+        <div class="pool-fill" id="l-fill"></div>
+        <div class="watermark" id="l-mark"></div>
+        <div class="pool-count" id="l-count">0 new since watermark</div>
+        <div class="pool-items" id="l-items"></div>
+      </div>
+      <div class="pool-legend">
+        <span style="color:var(--cyan)">■ observation</span>
+        <span style="color:var(--purple)">■ hypothesis</span>
+        <span>faded = below watermark (already judged)</span>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1;">
+      <h3>Team Lead thread <span class="tbl">taskMessage (Electric-synced)</span></h3>
+      <div class="leadlog" id="l-chat"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="l-stage"></div>
+    <p id="l-caption"></p>
+  </div>
+
+  <div class="controls">
+    <button class="ctl" id="l-prev">← Back</button>
+    <button class="ctl primary" id="l-next">Next →</button>
+    <div class="progress" id="l-progress"></div>
+    <span class="stepcount" id="l-stepcount"></span>
+    <button class="ctl" id="l-reset">Reset</button>
+  </div>
+  <p style="color: var(--muted); font-size: .78rem; margin-top: 10px;">Tip: use <span class="kbd">←</span> <span class="kbd">→</span> arrow keys to step.</p>
+
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/knowledge.ts">packages/agent/core/orchestration/knowledge.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/run-terminal.ts">apps/worker/src/run-terminal.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/tools/graph/epistemic.ts">packages/agent/core/tools/graph/epistemic.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/lead-tools.ts">packages/agent/core/orchestration/lead-tools.ts</span>
+  </div>
+</section>
+
+<!-- ══════════════ 3. THE GAUNTLET ══════════════ -->
+<section id="gauntlet">
+  <h2><span class="num">3</span> Inside <code class="mono">startLeadPulse()</code> — the gauntlet</h2>
+  <p class="lead">Every pulse — scheduled, knowledge, or quiescence — must pass four gates before a lead turn starts. Any gate can skip the pulse; a skipped pulse is retried by the next trigger or tomorrow's heartbeat, so no signal is ever lost.</p>
+  <div class="panel">
+    <div class="gauntlet" id="g-steps">
+      <div class="gstep" data-i="0">
+        <div class="gdot">1</div>
+        <div class="gbody">
+          <b>Budget gate</b>
+          <p><code>checkProjectBudget()</code> — an over-budget project pauses automated pulses (a lead turn costs money and couldn't start anything anyway). Raising the cap auto-resumes because this checks <em>live spend</em>, not a stamp.</p>
+        </div>
+      </div>
+      <div class="gstep" data-i="1">
+        <div class="gdot">2</div>
+        <div class="gbody">
+          <b>Lazy lead-thread creation</b>
+          <p>Guarded on <code>leadTaskId IS NULL</code> — a concurrent first chat message and a heartbeat converge on one thread. The creation-race loser deletes its own thread and adopts the winner's.</p>
+        </div>
+      </div>
+      <div class="gstep" data-i="2">
+        <div class="gdot">3</div>
+        <div class="gbody">
+          <b>Busy-lead guard — one turn at a time</b>
+          <p>If any lead run on this thread is still active, skip. This doubles as the loop's collapse valve: N personas finishing simultaneously all attempt a pulse, exactly one wins.</p>
+        </div>
+      </div>
+      <div class="gstep" data-i="3">
+        <div class="gdot">4</div>
+        <div class="gbody">
+          <b>Post + dispatch (with compensation)</b>
+          <p>Insert the pulse as a <code>taskMessage</code> (metadata <code>{heartbeat: true, pulse: kind}</code> so the UI styles it as automated), <code>createRootRun</code>, dispatch. If enqueue throws, the run is failed and the thread released — nothing will ever pick it up otherwise.</p>
+        </div>
+      </div>
+    </div>
+    <div class="gverdict" id="g-verdict"></div>
+    <div class="controls">
+      <button class="ctl primary" id="g-play">▶ Run the gauntlet</button>
+      <button class="ctl" id="g-play-busy">▶ Run with a busy lead</button>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/heartbeat.ts">packages/agent/core/orchestration/heartbeat.ts (startLeadPulse)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/usage.ts">packages/agent/core/orchestration/usage.ts (checkProjectBudget)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 4. SUFFICIENCY DECISIONS ══════════════ -->
+<section id="sufficiency">
+  <h2><span class="num">4</span> The four sufficiency decisions</h2>
+  <p class="lead">A pulsed lead reads the new knowledge (<code class="mono">getNewKnowledge</code> — read-only, watermark untouched) and picks exactly one path:</p>
+  <div class="pulse-cards">
+    <div class="pcard">
+      <div class="icon">⏳</div>
+      <h4>Wait</h4>
+      <p>Not sufficient yet, no owner input needed → start nothing, reply briefly. The pool keeps accumulating and the next pulse reports a cumulative count.</p>
+    </div>
+    <div class="pcard">
+      <div class="icon">🔄</div>
+      <h4><code class="mono">startContributionRound</code></h4>
+      <p><b style="color:var(--green)">The only thing that advances the watermark.</b> Jumps it to the newest finding's <code>created_at_ms</code>, then offers every idle persona the new knowledge with a triage brief — each decides for itself whether to contribute another run or pass.</p>
+    </div>
+    <div class="pcard">
+      <div class="icon">✋</div>
+      <h4><code class="mono">pauseForGuidance</code></h4>
+      <p>Blocked on a decision only the owner can make → pauses the project, stops in-flight work, and emails the owner. Chat alone is insufficient because no user is present during a pulse.</p>
+    </div>
+    <div class="pcard">
+      <div class="icon">🏁</div>
+      <h4><code class="mono">stopHeartbeat</code></h4>
+      <p>Objective met or nothing productive left → disables the EventBridge schedule (never deletes it) and, with <code>concludeProject</code>, marks the project <code>completed</code> — which is what actually ends all pulses: they refuse to start on non-active projects.</p>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/lead-tools.ts">packages/agent/core/orchestration/lead-tools.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/knowledge.ts">packages/agent/core/orchestration/knowledge.ts (startContributionRound)</span>
+    <span class="file-chip" data-path="packages/agent/core/prompts/team-lead.ts">packages/agent/core/prompts/team-lead.ts</span>
+  </div>
+</section>
+
+<!-- ══════════════ 5. LEAD vs ORCHESTRATOR ══════════════ -->
+<section id="lead-vs-orch">
+  <h2><span class="num">5</span> The lead is not an orchestrator</h2>
+  <div class="panel">
+    <table style="width:100%; border-collapse: collapse; font-size: .86rem;">
+      <thead>
+        <tr style="color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;">
+          <th style="text-align:left; padding: 8px 10px; border-bottom: 1px solid var(--border);"></th>
+          <th style="text-align:left; padding: 8px 10px; border-bottom: 1px solid var(--border);">Team Lead</th>
+          <th style="text-align:left; padding: 8px 10px; border-bottom: 1px solid var(--border);">Orchestrator (persona root)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:8px 10px; color:var(--muted)">Shape</td><td style="padding:8px 10px">Plain chat agent — one message, one reply</td><td style="padding:8px 10px">Plans, spawns children, yields, resumes</td></tr>
+        <tr><td style="padding:8px 10px; color:var(--muted)">Yields?</td><td style="padding:8px 10px"><b style="color:var(--red)">Never</b></td><td style="padding:8px 10px">Whenever plan tasks are still in flight</td></tr>
+        <tr><td style="padding:8px 10px; color:var(--muted)">Manages personas via</td><td style="padding:8px 10px">Tools only: listProjectAgents, startProjectAgent, stopProjectAgent, getAgentProgress, getNewKnowledge, startContributionRound, pauseForGuidance, stopHeartbeat, emailProjectOwner</td><td style="padding:8px 10px">create_plan / spawn_subagents / await_subagents</td></tr>
+        <tr><td style="padding:8px 10px; color:var(--muted)">Runtime</td><td style="padding:8px 10px"><code class="mono">StreamRuntime</code> — replies persist to <code class="mono">taskMessage</code>, Electric-synced to the chat UI</td><td style="padding:8px 10px"><code class="mono">RunRuntime</code> — transcript in <code class="mono">run_message</code></td></tr>
+        <tr><td style="padding:8px 10px; color:var(--muted)">Model</td><td style="padding:8px 10px"><code class="mono">project.leadModel</code> if servable, else the Team Lead default</td><td style="padding:8px 10px"><code class="mono">DEFAULT_MODEL_ID</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="apps/worker/src/processors.ts">apps/worker/src/processors.ts (processTeamLeadRun vs processOrchestratorRun)</span>
+    <span class="file-chip" data-path="packages/agent/core/runtimes/stream.ts">packages/agent/core/runtimes/stream.ts</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Persona agents write knowledge · run terminals trigger pulses · the lead judges sufficiency · only decisions move the watermark.
+</footer>
+
+<script>
+/* ── file chips: click to copy repo-relative path ── */
+document.querySelectorAll(".file-chip").forEach(chip => {
+  chip.addEventListener("click", async () => {
+    const path = chip.dataset.path;
+    try {
+      await navigator.clipboard.writeText(path);
+      chip.classList.add("copied");
+      setTimeout(() => chip.classList.remove("copied"), 1400);
+    } catch { /* clipboard unavailable (file://) — path is visible anyway */ }
+  });
+});
+
+/* ════════════ Research loop stepper ════════════ */
+(function () {
+  const AV = {
+    Ada: { bg: "rgba(88,166,255,.18)", fg: "#58a6ff" },
+    Bo:  { bg: "rgba(63,185,80,.18)",  fg: "#3fb950" },
+    Cy:  { bg: "rgba(240,136,62,.18)", fg: "#f0883e" },
+  };
+  const persona = (name, role, state, flash) => ({ name, role, state, flash: !!flash });
+  // knowledge items: {kind: obs|hyp, below: judged already}
+  const K = (kind, below) => ({ kind, below: !!below });
+
+  const steps = [
+    {
+      stage: "Step 1 · Roster working",
+      cap: "The project is active. All three personas are <code>working</code> on their root runs. The knowledge watermark (<code>project.knowledgeWatermarkAt</code>) sits at the lead's last sufficiency decision — nothing new above it yet.",
+      roster: [persona("Ada","docking","working"), persona("Bo","literature","working"), persona("Cy","assays","working")],
+      pool: [], mark: 0, gate: [], chat: [],
+    },
+    {
+      stage: "Step 2 · Knowledge accumulates (no pulse)",
+      cap: "Ada records 3 observations and 1 hypothesis via the graph-epistemic tools — each stamped with <code>created_at_ms</code> and author provenance. Writing knowledge does <b>not</b> pulse the lead; pulses fire on <em>run terminals</em>, not on writes.",
+      roster: [persona("Ada","docking","working", true), persona("Bo","literature","working"), persona("Cy","assays","working")],
+      pool: [K("obs"),K("obs"),K("obs"),K("hyp")], mark: 0, gate: [], chat: [],
+    },
+    {
+      stage: "Step 3 · Ada finishes → knowledge pulse",
+      cap: "Ada's root run reaches terminal. <code>onChildTerminal</code> flips her roster row to <code>idle</code>, then <code>maybeKnowledgePulse</code> counts 4 new findings past the watermark → pulse allowed. <code>startLeadPulse</code> posts the automated message and dispatches one lead turn. <code>lastKnowledgePulseAt</code> is stamped.",
+      roster: [persona("Ada","docking","idle", true), persona("Bo","literature","working"), persona("Cy","assays","working")],
+      pool: [K("obs"),K("obs"),K("obs"),K("hyp")], mark: 0,
+      gate: [{ t:"t+0", ok:true, label:"knowledge pulse", reason:"4 new findings, no cooldown active" }],
+      chat: [{ who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Ada just completed a run. 4 new findings have accumulated since your last sufficiency decision (contributors: Ada: 4). Still working: Bo, Cy." }],
+    },
+    {
+      stage: "Step 4 · Lead judges: not sufficient",
+      cap: "The lead calls <code>getNewKnowledge</code> (read-only — the watermark does <b>not</b> move) and judges the 4 findings against the project's sufficiency criteria. Not enough yet, no owner input needed → it waits. The pool keeps growing.",
+      roster: [persona("Ada","docking","idle"), persona("Bo","literature","working"), persona("Cy","assays","working")],
+      pool: [K("obs"),K("obs"),K("obs"),K("hyp")], mark: 0,
+      gate: [{ t:"t+0", ok:true, label:"knowledge pulse", reason:"4 new findings, no cooldown active" }],
+      chat: [
+        { who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Ada just completed a run. 4 new findings…" },
+        { who:"team lead", cls:"lead", body:"Reviewed Ada's docking observations — promising but not conclusive. Waiting for Bo's literature evidence before reacting. No action taken." },
+      ],
+    },
+    {
+      stage: "Step 5 · Bo finishes → pulse skipped (cooldown)",
+      cap: "Three minutes later Bo finishes with 2 more findings (cumulative pool: 6). Cy is still working and the 5-minute cooldown is active → the pulse is <b>skipped</b>. Nothing is lost: pulses never advance the watermark, so the next pulse reports all 6.",
+      roster: [persona("Ada","docking","idle"), persona("Bo","literature","idle", true), persona("Cy","assays","working")],
+      pool: [K("obs"),K("obs"),K("obs"),K("hyp"),K("obs"),K("hyp")], mark: 0,
+      gate: [
+        { t:"t+0", ok:true, label:"knowledge pulse", reason:"4 new findings, no cooldown active" },
+        { t:"t+3m", ok:false, label:"knowledge pulse", reason:"cooldown active; the pool keeps accumulating" },
+      ],
+      chat: [
+        { who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Ada just completed a run. 4 new findings…" },
+        { who:"team lead", cls:"lead", body:"Waiting for Bo's literature evidence before reacting." },
+      ],
+    },
+    {
+      stage: "Step 6 · Cy finishes → roster idle, pulse fires",
+      cap: "Cy finishes with 1 more finding (pool: 7). The roster is now fully idle — <code>allIdle</code> bypasses the cooldown, so the knowledge pulse fires with the cumulative count.",
+      roster: [persona("Ada","docking","idle"), persona("Bo","literature","idle"), persona("Cy","assays","idle", true)],
+      pool: [K("obs"),K("obs"),K("obs"),K("hyp"),K("obs"),K("hyp"),K("obs")], mark: 0,
+      gate: [
+        { t:"t+0", ok:true, label:"knowledge pulse", reason:"4 new findings, no cooldown active" },
+        { t:"t+3m", ok:false, label:"knowledge pulse", reason:"cooldown active; the pool keeps accumulating" },
+        { t:"t+9m", ok:true, label:"knowledge pulse", reason:"7 new findings, roster fully idle (cooldown bypassed)" },
+      ],
+      chat: [
+        { who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Ada just completed a run. 4 new findings…" },
+        { who:"team lead", cls:"lead", body:"Waiting for Bo's literature evidence before reacting." },
+        { who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Cy just completed a run. 7 new findings have accumulated since your last sufficiency decision (contributors: Ada: 4, Bo: 2, Cy: 1). All agents are now idle." },
+      ],
+    },
+    {
+      stage: "Step 7 · Sufficient → contribution round",
+      cap: "The lead judges the 7 findings <b>sufficient</b> and calls <code>startContributionRound</code>. This is the only operation that advances the watermark — it jumps to the newest finding's <code>created_at_ms</code> (all 7 now sit below the line), then every idle persona gets a triage brief. Ada and Cy accept; Bo passes.",
+      roster: [persona("Ada","docking","working", true), persona("Bo","literature","idle"), persona("Cy","assays","working", true)],
+      pool: [K("obs",true),K("obs",true),K("obs",true),K("hyp",true),K("obs",true),K("hyp",true),K("obs",true)], mark: 62,
+      gate: [
+        { t:"t+9m", ok:true, label:"knowledge pulse", reason:"7 new findings, roster fully idle" },
+      ],
+      chat: [
+        { who:"automated pulse", cls:"auto", body:"[Knowledge pulse] Cy just completed a run. 7 new findings… All agents are now idle." },
+        { who:"team lead", cls:"lead", body:"Docking scores + literature support converge on compound A. Sufficient to react: startContributionRound — watermark advanced. Ada and Cy accepted triage briefs; Bo passed." },
+      ],
+    },
+    {
+      stage: "Step 8 · Round ends quiet → quiescence pulse",
+      cap: "Ada and Cy finish their contribution runs without recording new findings. The roster goes fully idle with 0 new since the (advanced) watermark → the <b>quiescence pulse</b> fires. It is never debounced — it may be the loop's last signal.",
+      roster: [persona("Ada","docking","idle", true), persona("Bo","literature","idle"), persona("Cy","assays","idle", true)],
+      pool: [K("obs",true),K("obs",true),K("obs",true),K("hyp",true),K("obs",true),K("hyp",true),K("obs",true)], mark: 62,
+      gate: [
+        { t:"t+9m", ok:true, label:"knowledge pulse", reason:"7 new findings, roster fully idle" },
+        { t:"t+2h", ok:true, label:"quiescence pulse", reason:"roster idle, 0 new — never debounced" },
+      ],
+      chat: [
+        { who:"team lead", cls:"lead", body:"startContributionRound — watermark advanced. Ada and Cy accepted; Bo passed." },
+        { who:"automated pulse", cls:"auto", body:"[Quiescence pulse] Cy just completed a run. All project agents are now idle and no new knowledge has been added since your last sufficiency decision — the research loop has gone quiet." },
+      ],
+    },
+    {
+      stage: "Step 9 · Conclude",
+      cap: "Nothing productive remains. The lead calls <code>stopHeartbeat</code> with <code>concludeProject</code>: the EventBridge schedule flips to <code>DISABLED</code> (never deleted — re-enable from settings) and the project is marked <code>completed</code>. That status is what actually ends the loop: every pulse kind refuses to start lead turns on non-active projects.",
+      roster: [persona("Ada","docking","idle"), persona("Bo","literature","idle"), persona("Cy","assays","idle")],
+      pool: [K("obs",true),K("obs",true),K("obs",true),K("hyp",true),K("obs",true),K("hyp",true),K("obs",true)], mark: 62,
+      gate: [
+        { t:"t+2h", ok:true, label:"quiescence pulse", reason:"roster idle, 0 new — never debounced" },
+        { t:"t+2h", ok:false, label:"(all future pulses)", reason:"project is completed — pulses refuse to start" },
+      ],
+      chat: [
+        { who:"automated pulse", cls:"auto", body:"[Quiescence pulse] …the research loop has gone quiet." },
+        { who:"team lead", cls:"lead", body:"Objective met: compound A is supported by docking, literature, and assay triage. stopHeartbeat(concludeProject) — schedule disabled, project completed. Emailing the owner with the conclusion." },
+      ],
+    },
+  ];
+
+  let idx = 0;
+  const $roster = document.getElementById("l-roster");
+  const $gate = document.getElementById("l-gate");
+  const $fill = document.getElementById("l-fill");
+  const $mark = document.getElementById("l-mark");
+  const $count = document.getElementById("l-count");
+  const $items = document.getElementById("l-items");
+  const $chat = document.getElementById("l-chat");
+  const $stage = document.getElementById("l-stage");
+  const $caption = document.getElementById("l-caption");
+  const $progress = document.getElementById("l-progress");
+  const $stepcount = document.getElementById("l-stepcount");
+  const $prev = document.getElementById("l-prev");
+  const $next = document.getElementById("l-next");
+
+  steps.forEach(() => {
+    const t = document.createElement("div");
+    t.className = "tick";
+    $progress.appendChild(t);
+  });
+
+  function render() {
+    const s = steps[idx];
+
+    $roster.innerHTML = "";
+    s.roster.forEach(p => {
+      const d = document.createElement("div");
+      d.className = "persona" + (p.flash ? " flash" : "");
+      const a = AV[p.name];
+      d.innerHTML =
+        `<div class="avatar" style="background:${a.bg};color:${a.fg}">${p.name[0]}</div>` +
+        `<div class="pname">${p.name}<small>${p.role}</small></div>` +
+        `<span class="badge ${p.state}">${p.state}</span>`;
+      $roster.appendChild(d);
+    });
+
+    // pool
+    const newCount = s.pool.filter(k => !k.below).length;
+    const totalPct = Math.min(92, s.pool.length * 11);
+    $fill.style.height = totalPct + "%";
+    $mark.style.bottom = s.mark + "%";
+    $count.textContent = `${newCount} new since watermark (${s.pool.length} total)`;
+    $items.innerHTML = "";
+    s.pool.forEach(k => {
+      const d = document.createElement("div");
+      d.className = `knode ${k.kind}` + (k.below ? " below" : "");
+      d.textContent = k.kind === "obs" ? "obs" : "hyp";
+      $items.appendChild(d);
+    });
+
+    // gate log
+    $gate.innerHTML = "";
+    if (s.gate.length === 0) {
+      $gate.innerHTML = `<div style="color:#4a5568;font-size:.76rem">— no pulse attempts yet —</div>`;
+    }
+    s.gate.forEach(g => {
+      const d = document.createElement("div");
+      d.className = "pulse-row";
+      d.innerHTML =
+        `<span class="ptime">${g.t}</span>` +
+        `<span class="badge ${g.ok ? "pulse-started" : "pulse-skipped"}">${g.ok ? "started" : "skipped"}</span>` +
+        `<span><b style="font-size:.78rem">${g.label}</b> <span class="preason">— ${g.reason}</span></span>`;
+      $gate.appendChild(d);
+    });
+
+    // chat
+    $chat.innerHTML = "";
+    if (s.chat.length === 0) {
+      $chat.innerHTML = `<div style="color:#4a5568;font-size:.76rem">— lead thread is quiet —</div>`;
+    }
+    s.chat.forEach(m => {
+      const d = document.createElement("div");
+      d.className = `msg ${m.cls}`;
+      d.innerHTML = `<div class="who">${m.who}</div><div class="body">${m.body}</div>`;
+      $chat.appendChild(d);
+    });
+    $chat.scrollTop = $chat.scrollHeight;
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+    [...$progress.children].forEach((t, i) => t.classList.toggle("done", i <= idx));
+    $stepcount.textContent = `step ${idx + 1} / ${steps.length}`;
+    $prev.disabled = idx === 0;
+    $next.disabled = idx === steps.length - 1;
+  }
+
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n >= steps.length) return;
+    idx = n;
+    render();
+  }
+  $next.addEventListener("click", () => go(1));
+  $prev.addEventListener("click", () => go(-1));
+  document.getElementById("l-reset").addEventListener("click", () => { idx = 0; render(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") go(1);
+    if (e.key === "ArrowLeft") go(-1);
+  });
+  render();
+})();
+
+/* ════════════ Gauntlet replay ════════════ */
+(function () {
+  const stepsEls = [...document.querySelectorAll("#g-steps .gstep")];
+  const verdict = document.getElementById("g-verdict");
+  const btnOk = document.getElementById("g-play");
+  const btnBusy = document.getElementById("g-play-busy");
+  let timers = [];
+
+  function reset() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    stepsEls.forEach(el => el.classList.remove("on", "pass", "stop"));
+    verdict.textContent = "";
+    verdict.style.color = "";
+  }
+
+  function play(busy) {
+    reset();
+    const stopAt = busy ? 2 : -1; // busy-lead guard stops it
+    stepsEls.forEach((el, i) => {
+      timers.push(setTimeout(() => {
+        el.classList.add("on");
+        if (i === stopAt) {
+          el.classList.add("stop");
+          verdict.textContent = "✗ Skipped: \"The Team Lead is mid-turn; skipping this pulse.\" — the next run terminal or tomorrow's heartbeat retries with the same-or-larger count.";
+          verdict.style.color = "var(--yellow)";
+        } else if (stopAt === -1 || i < stopAt) {
+          el.classList.add("pass");
+        }
+        if (stopAt === -1 && i === stepsEls.length - 1) {
+          verdict.textContent = "✓ Pulse started: taskMessage inserted, lead root run created and dispatched.";
+          verdict.style.color = "var(--green)";
+        }
+      }, 700 * (i + 1)));
+    });
+    if (busy) {
+      // don't light steps after the stop
+      timers = timers.slice(0, stopAt + 1);
+    }
+  }
+  btnOk.addEventListener("click", () => play(false));
+  btnBusy.addEventListener("click", () => play(true));
+})();
+</script>
+</body>
+</html>

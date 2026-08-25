@@ -1,0 +1,1 @@
+ALTER TABLE "project" ALTER COLUMN "maxBudgetUsd" SET DEFAULT 100;

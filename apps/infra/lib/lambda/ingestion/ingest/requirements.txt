@@ -1,0 +1,12 @@
+# CPU-only torch (Docling pulls it transitively but defaults to the multi-GB
+# CUDA build) — install from PyTorch's CPU wheel index in the Dockerfile.
+torch
+torchvision
+docling>=2.0.0
+boto3>=1.35.0
+python-pptx>=1.0.0
+pypdfium2>=4.0.0
+# Headless OpenCV for docling_ibm_models' tableformer: same cv2, no X11/GUI
+# system libs (which the Lambda base image lacks). The Dockerfile also force-
+# swaps this in case docling pulls the GUI opencv-python transitively.
+opencv-python-headless

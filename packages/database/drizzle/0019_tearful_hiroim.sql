@@ -1,0 +1,1 @@
+ALTER TABLE "project_session" ADD COLUMN "activeRunId" uuid;

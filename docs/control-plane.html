@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sweeper, Budget &amp; Cancellation — Animated Walkthrough</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2330;
+    --border: #2d3646;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+
+  header {
+    padding: 64px 24px 40px; text-align: center;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(248,81,73,.13), transparent),
+      radial-gradient(ellipse 40% 60% at 80% 0%, rgba(210,153,34,.10), transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  header p.sub { color: var(--muted); margin-top: 10px; max-width: 780px; margin-left: auto; margin-right: auto; }
+  .keyline {
+    display: inline-block; margin-top: 22px; padding: 10px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--red); font-weight: 600;
+  }
+  nav.crumbs { padding: 14px 24px; font-size: .82rem; color: var(--muted); }
+  nav.crumbs a { color: var(--accent); text-decoration: none; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 24px 120px; }
+  section { margin-top: 72px; }
+  section > h2 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  section > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+    background: rgba(248,81,73,.15); color: var(--red); font-size: .9rem;
+  }
+  section > p.lead { color: var(--muted); margin-top: 8px; max-width: 860px; }
+  .panel { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+
+  .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .72rem;
+    color: var(--cyan); cursor: pointer; transition: border-color .2s;
+  }
+  .file-chip:hover { border-color: var(--cyan); }
+  .file-chip::before { content: "📄"; font-size: .8rem; }
+  .file-chip.copied { border-color: var(--green); color: var(--green); }
+  .file-chip.copied::after { content: " copied"; color: var(--green); font-size: .68rem; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    border: 1px solid transparent; white-space: nowrap; transition: all .4s;
+  }
+  .badge.pending   { background: rgba(139,152,169,.14); color: var(--muted); border-color: rgba(139,152,169,.35); }
+  .badge.running   { background: rgba(88,166,255,.14);  color: var(--accent); border-color: rgba(88,166,255,.4); }
+  .badge.waiting   { background: rgba(210,153,34,.14);  color: var(--yellow); border-color: rgba(210,153,34,.4); }
+  .badge.succeeded { background: rgba(63,185,80,.14);   color: var(--green); border-color: rgba(63,185,80,.4); }
+  .badge.failed    { background: rgba(248,81,73,.14);   color: var(--red); border-color: rgba(248,81,73,.4); }
+  .badge.cancelled { background: rgba(248,81,73,.14);   color: var(--red); border-color: rgba(248,81,73,.4); }
+  .badge.idle      { background: rgba(139,152,169,.14); color: var(--muted); border-color: rgba(139,152,169,.35); }
+  .badge.working   { background: rgba(88,166,255,.14);  color: var(--accent); border-color: rgba(88,166,255,.4); }
+
+  .walk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .walk-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .tbl { color: var(--cyan); font-family: "SF Mono", ui-monospace, Menlo, monospace; text-transform: none; letter-spacing: 0; font-size: .76rem; }
+
+  table.state { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  table.state th {
+    text-align: left; color: var(--muted); font-weight: 600; font-size: .7rem;
+    text-transform: uppercase; letter-spacing: .06em;
+    padding: 6px 8px; border-bottom: 1px solid var(--border);
+  }
+  table.state td { padding: 7px 8px; border-bottom: 1px solid rgba(45,54,70,.5); }
+  table.state tr.flash td { animation: rowflash 1.1s ease; }
+  @keyframes rowflash { 0% { background: rgba(248,81,73,.16); } 100% { background: transparent; } }
+  @keyframes rowappear { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* lease heartbeat strip */
+  .lease-strip { display: flex; align-items: center; gap: 6px; min-height: 40px; flex-wrap: wrap; }
+  .beat {
+    width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: .6rem; font-weight: 700; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    border: 1.5px solid var(--border); color: var(--muted); animation: rowappear .4s ease;
+  }
+  .beat.ok { border-color: var(--green); color: var(--green); background: rgba(63,185,80,.08); }
+  .beat.miss { border-color: var(--red); color: var(--red); background: rgba(248,81,73,.08); }
+  .lease-note { font-size: .72rem; color: var(--muted); margin-top: 8px; font-family: "SF Mono", ui-monospace, Menlo, monospace; min-height: 1.4em; }
+
+  /* sweeper log */
+  .sweep-log { display: flex; flex-direction: column; gap: 7px; min-height: 90px; font-size: .76rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .sweep-log .sv { color: var(--muted); animation: rowappear .4s ease; }
+  .sweep-log .sv b { color: var(--orange); }
+  .sweep-log .sv.hot b { color: var(--red); }
+
+  /* budget gauge */
+  .gauge-wrap { margin-top: 6px; }
+  .gauge-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: .68rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; margin-bottom: 5px; }
+  .gauge { height: 30px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .gauge .fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, rgba(63,185,80,.55), rgba(210,153,34,.55) 70%, rgba(248,81,73,.6));
+    transition: width .9s cubic-bezier(.4,0,.2,1);
+  }
+  .gauge .cap-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); transition: left .7s; }
+  .gauge .cap-line::after {
+    content: "cap"; position: absolute; top: -1px; left: 5px; font-size: .62rem; color: var(--red);
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-weight: 700;
+  }
+  .gauge-tag { margin-top: 8px; font-size: .76rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; color: var(--muted); min-height: 1.4em; }
+  .checkpoint-list { display: flex; flex-direction: column; gap: 8px; }
+  .checkpoint {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px;
+    background: var(--panel2); border: 1px solid var(--border); font-size: .78rem;
+    transition: border-color .4s, opacity .4s;
+  }
+  .checkpoint .cp-icon { font-size: .95rem; }
+  .checkpoint.hit { border-color: var(--red); }
+  .checkpoint.hit .cp-verdict { color: var(--red); font-weight: 700; }
+  .checkpoint .cp-verdict { margin-left: auto; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .68rem; color: var(--muted); }
+  .checkpoint code { background: rgba(88,166,255,.12); padding: 0 5px; border-radius: 4px; font-size: .88em; }
+
+  /* cancellation tree */
+  .worker-panes { display: flex; flex-direction: column; gap: 10px; }
+  .wpane {
+    background: var(--panel2); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    font-size: .76rem; transition: border-color .4s, opacity .4s;
+  }
+  .wpane .wtitle { font-weight: 700; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .78rem; display: flex; justify-content: space-between; align-items: center; }
+  .wpane .wbody { color: var(--muted); margin-top: 4px; font-size: .72rem; min-height: 1.3em; }
+  .wpane.busy { border-color: var(--accent); }
+  .wpane.aborted { border-color: var(--red); }
+  .wpane.gone { opacity: .38; }
+  .wpane .wstate { font-size: .66rem; font-weight: 700; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .wpane.busy .wstate { color: var(--accent); }
+  .wpane.aborted .wstate { color: var(--red); }
+  .wpane.gone .wstate { color: var(--muted); }
+
+  .caption {
+    margin-top: 18px; padding: 18px 20px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(248,81,73,.07), rgba(248,81,73,.02));
+    border: 1px solid rgba(248,81,73,.25); min-height: 96px;
+  }
+  .caption .stage { color: var(--red); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+  .caption p { margin-top: 6px; font-size: .95rem; }
+  .caption p code { background: rgba(248,81,73,.1); padding: 1px 6px; border-radius: 5px; font-size: .85em; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  button.ctl {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 22px; font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  button.ctl:hover:not(:disabled) { border-color: var(--red); background: rgba(248,81,73,.08); }
+  button.ctl:disabled { opacity: .35; cursor: default; }
+  button.ctl.primary { background: var(--red); color: #0d1117; border-color: var(--red); }
+  button.ctl.primary:hover:not(:disabled) { background: #ff7b75; }
+  .progress { flex: 1; display: flex; gap: 5px; min-width: 140px; }
+  .progress .tick { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background .3s; }
+  .progress .tick.done { background: var(--red); }
+  .stepcount { color: var(--muted); font-size: .8rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82em; background: var(--panel2); }
+
+  .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
+  .icard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .icard .ic-title { font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+  .icard .ic-title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+  .icard p { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .icard p code { background: rgba(88,166,255,.12); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 40px 0 60px; border-top: 1px solid var(--border); margin-top: 80px; }
+</style>
+</head>
+<body>
+
+<nav class="crumbs"><a href="index.html">← All animations</a></nav>
+
+<header>
+  <h1>Sweeper, Budget &amp; Cancellation</h1>
+  <p class="sub">The control plane: how dead executors are detected and retried, where every agent checks the project budget, and how a running agent actually finds out it has been stopped.</p>
+  <div class="keyline">Nobody sends a kill signal. State changes in Postgres, and everyone discovers it through guards.</div>
+</header>
+
+<main>
+
+<!-- ══════════════ 1. LEASES + SWEEPER ══════════════ -->
+<section id="sweeper">
+  <h2><span class="num">1</span> Leases and the sweeper</h2>
+  <p class="lead">A guarded claim cannot recover a run whose executor died while holding it in <code class="mono">running</code> — nothing would ever move it again. Executors renew a lease (bump <code class="mono">updatedAt</code>) every 60 seconds; a scheduled sweep Lambda judges anything that stops.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Run row <span class="tbl">run</span></h3>
+      <table class="state">
+        <thead><tr><th>id</th><th>status</th><th>attempt</th><th>lease age</th></tr></thead>
+        <tbody id="s-run"></tbody>
+      </table>
+      <h3 style="margin-top:18px">Lease renewals <span class="tbl">renewRunLease — every 60s, guarded on planning|running</span></h3>
+      <div class="lease-strip" id="s-beats"></div>
+      <div class="lease-note" id="s-leasenote"></div>
+    </div>
+    <div class="card">
+      <h3>Sweep Lambda <span class="tbl">sweepStalledRuns — scheduled, OFF the AgentCore substrate</span></h3>
+      <div class="sweep-log" id="s-log"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="s-stage"></div>
+    <p id="s-caption"></p>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="s-prev">← Back</button>
+    <button class="ctl primary" id="s-next">Next →</button>
+    <div class="progress" id="s-progress"></div>
+    <span class="stepcount" id="s-stepcount"></span>
+    <button class="ctl" id="s-reset">Reset</button>
+  </div>
+
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Why 3 missed beats, not a 10-minute window</div>
+      <p>The old heuristic — "no row write in 10 minutes" — false-positived on any healthy segment longer than the window. A missing <em>lease</em> means the executor is gone, not that the segment is slow. Two tolerated misses keep a transient DB blip from failing healthy work.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Off its own failure domain</div>
+      <p>The sweeper runs in a separate scheduled Lambda, deliberately off the AgentCore runtime it recovers — a broken worker image or hung DB pool cannot take down its own crash recovery.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Idle rows keep the patient window</div>
+      <p><code>pending</code> and <code>waiting_on_children</code> rows are held by nobody — no lease to renew, so staleness can't mean death. They get the 10-minute window: lost dispatches are re-sent, dropped-baton parents resumed.</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <span class="file-chip" data-path="apps/worker/src/sweeper.ts">apps/worker/src/sweeper.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/run-lease.ts">apps/worker/src/run-lease.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/sweep-lambda.ts">apps/worker/src/sweep-lambda.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/store.ts">packages/agent/core/orchestration/store.ts (renewRunLease)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 2. BUDGET ══════════════ -->
+<section id="budget">
+  <h2><span class="num">2</span> Budget enforcement at checkpoints</h2>
+  <p class="lead"><code class="mono">enforceProjectBudget</code> is called at segment boundaries — never mid-stream — so a streaming segment always finishes before the stop lands. Overshoot is bounded by roughly one segment's cost.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Project spend <span class="tbl">SUM(run.costUsd) vs project.maxBudgetUsd</span></h3>
+      <div class="gauge-wrap">
+        <div class="gauge-scale"><span>$0</span><span id="b-capmax">$100</span></div>
+        <div class="gauge">
+          <div class="fill" id="b-fill"></div>
+          <div class="cap-line" id="b-cap"></div>
+        </div>
+        <div class="gauge-tag" id="b-tag"></div>
+      </div>
+      <h3 style="margin-top:18px">Roster <span class="tbl">project_agent</span></h3>
+      <table class="state">
+        <thead><tr><th>agent</th><th>state</th><th>lastResult</th></tr></thead>
+        <tbody id="b-roster"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>The checkpoints <span class="tbl">every place the gate runs</span></h3>
+      <div class="checkpoint-list">
+        <div class="checkpoint" id="cp-start">
+          <span class="cp-icon">🚪</span>
+          <span>Segment start — right after <code>claimRun</code> in every processor (orchestrator, sub-agent)</span>
+          <span class="cp-verdict" id="cpv-start">—</span>
+        </div>
+        <div class="checkpoint" id="cp-resume">
+          <span class="cp-icon">🔁</span>
+          <span>Child-terminal resume point — in <code>onChildTerminal</code>, before <code>markRunResumable</code> wakes the parent</span>
+          <span class="cp-verdict" id="cpv-resume">—</span>
+        </div>
+        <div class="checkpoint" id="cp-pulse">
+          <span class="cp-icon">🫀</span>
+          <span>Lead pulse gate — <code>checkProjectBudget</code> in <code>startLeadPulse</code> pauses all automated pulses</span>
+          <span class="cp-verdict" id="cpv-pulse">—</span>
+        </div>
+      </div>
+      <h3 style="margin-top:18px">Enforcement log</h3>
+      <div class="sweep-log" id="b-log"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="b-stage"></div>
+    <p id="b-caption"></p>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="b-prev">← Back</button>
+    <button class="ctl primary" id="b-next">Next →</button>
+    <div class="progress" id="b-progress"></div>
+    <span class="stepcount" id="b-stepcount"></span>
+    <button class="ctl" id="b-reset">Reset</button>
+  </div>
+
+  <div class="files">
+    <span class="file-chip" data-path="apps/worker/src/budget.ts">apps/worker/src/budget.ts (enforceProjectBudget)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/usage.ts">packages/agent/core/orchestration/usage.ts (getProjectSpend, checkProjectBudget)</span>
+    <span class="file-chip" data-path="apps/worker/src/run-terminal.ts">apps/worker/src/run-terminal.ts (gate before resume)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/heartbeat.ts">packages/agent/core/orchestration/heartbeat.ts (pulse gate)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 3. CANCELLATION PICKUP ══════════════ -->
+<section id="cancel">
+  <h2><span class="num">3</span> How a running agent finds out it was stopped</h2>
+  <p class="lead">The lead calls <code class="mono">stopProjectAgent</code> (or a user hits Stop). One guarded UPDATE flips the whole tree to <code class="mono">cancelled</code> — but the workers executing those runs are mid-LLM-turn on AgentCore and receive no signal at all. They discover it three ways.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Run tree <span class="tbl">run rows</span></h3>
+      <table class="state">
+        <thead><tr><th>id</th><th>role</th><th>status</th></tr></thead>
+        <tbody id="c-tree"></tbody>
+      </table>
+      <h3 style="margin-top:18px">Roster <span class="tbl">project_agent (Electric-synced)</span></h3>
+      <table class="state">
+        <thead><tr><th>agent</th><th>state</th><th>activeRunId</th></tr></thead>
+        <tbody id="c-roster"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Live workers <span class="tbl">what each AgentCore session sees</span></h3>
+      <div class="worker-panes" id="c-workers"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="c-stage"></div>
+    <p id="c-caption"></p>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="c-prev">← Back</button>
+    <button class="ctl primary" id="c-next">Next →</button>
+    <div class="progress" id="c-progress"></div>
+    <span class="stepcount" id="c-stepcount"></span>
+    <button class="ctl" id="c-reset">Reset</button>
+  </div>
+  <p style="color: var(--muted); font-size: .78rem; margin-top: 10px;">Tip: <span class="kbd">←</span> <span class="kbd">→</span> step whichever walkthrough you scrolled to last (each section has its own buttons).</p>
+
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Pickup 1 · the stop-signal poller</div>
+      <p>Every agent run has a background poller (<code>createStopSignalPoller</code>, 2s interval) checking its own run row. Row terminal → <code>AbortController.abort()</code> → the LLM stream halts <em>mid-turn</em>. The processor sees <code>stopReason: "stopped"</code>, skips <code>finishRun</code> (guarded no-op anyway), and just EOFs the stream.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Pickup 2 · guarded transitions fail</div>
+      <p>A worker that already finished its turn tries <code>yieldRun</code> / <code>finishRun</code> — zero rows returned, because the status is <code>cancelled</code>, not <code>running</code>. The work is dropped silently. <code>renewRunLease</code> also returns false, telling the renewer there is nothing left to keep alive.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Pickup 3 · spawn refusal</div>
+      <p><code>spawnSubagents</code> re-reads the parent before creating children: a terminal parent gets "This run has been stopped; no new sub-agents can be spawned." Without this, a cancelled orchestrator mid-turn could create unstoppable orphans.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>The roster reset is race-safe</div>
+      <p><code>stopProjectAgent</code> resets the roster row guarded on the exact <code>activeRunId</code> it cancelled — a concurrent start that already claimed the slot with a new run is never clobbered to idle. And if <code>cancelRunTree</code> cancelled zero rows (the run finished on its own first), the real result is preserved instead of stamping the cancelled stub over it.</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/project-agents.ts">packages/agent/core/orchestration/project-agents.ts (stopProjectAgent)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/store.ts">packages/agent/core/orchestration/store.ts (cancelRunTree)</span>
+    <span class="file-chip" data-path="packages/agent/core/lib/stop-signal.ts">packages/agent/core/lib/stop-signal.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/processors.ts">apps/worker/src/processors.ts (runCancellationSignal)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/tools.ts">packages/agent/core/orchestration/tools.ts (spawn refusal)</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Leases assert liveness · the sweeper judges silence · budget gates run at segment boundaries · cancellation is discovered, never delivered.
+</footer>
+
+<script>
+/* file chips */
+document.querySelectorAll(".file-chip").forEach(chip => {
+  chip.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(chip.dataset.path);
+      chip.classList.add("copied");
+      setTimeout(() => chip.classList.remove("copied"), 1400);
+    } catch { /* clipboard unavailable on file:// is fine */ }
+  });
+});
+
+/* shared stepper factory: wires prev/next/reset/progress for a section */
+function makeStepper(prefix, steps, render) {
+  let idx = 0;
+  const $progress = document.getElementById(prefix + "-progress");
+  const $stepcount = document.getElementById(prefix + "-stepcount");
+  const $prev = document.getElementById(prefix + "-prev");
+  const $next = document.getElementById(prefix + "-next");
+  steps.forEach(() => {
+    const t = document.createElement("div");
+    t.className = "tick";
+    $progress.appendChild(t);
+  });
+  function draw() {
+    render(steps[idx], idx);
+    [...$progress.children].forEach((t, i) => t.classList.toggle("done", i <= idx));
+    $stepcount.textContent = "step " + (idx + 1) + " / " + steps.length;
+    $prev.disabled = idx === 0;
+    $next.disabled = idx === steps.length - 1;
+  }
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n >= steps.length) return;
+    idx = n;
+    draw();
+  }
+  $next.addEventListener("click", () => go(1));
+  $prev.addEventListener("click", () => go(-1));
+  document.getElementById(prefix + "-reset").addEventListener("click", () => { idx = 0; draw(); });
+  draw();
+  return { go };
+}
+
+/* arrow keys drive whichever stepper's section was interacted with last */
+const steppers = {};
+let activeStepper = "s";
+["sweeper", "budget", "cancel"].forEach((secId, i) => {
+  const prefix = ["s", "b", "c"][i];
+  document.getElementById(secId).addEventListener("click", () => { activeStepper = prefix; });
+});
+document.addEventListener("keydown", (e) => {
+  const st = steppers[activeStepper];
+  if (!st) return;
+  if (e.key === "ArrowRight") st.go(1);
+  if (e.key === "ArrowLeft") st.go(-1);
+});
+
+/* ════════════ 1. Sweeper stepper ════════════ */
+(function () {
+  // beats: array of "ok"|"miss"; run: {status, attempt, age}
+  const steps = [
+    {
+      stage: "Step 1 · Healthy execution",
+      cap: "A worker claimed run <code>C1</code> (<code>pending → running</code>, attempt 1) and started its lease: <code>renewRunLease</code> bumps <code>updatedAt</code> every 60 seconds, guarded on <code>planning|running</code>. The run row itself is untouched by normal segment work — messages and events go to other tables — so liveness must be asserted explicitly.",
+      run: { status: "running", attempt: 1, age: "12s" },
+      beats: ["ok","ok","ok"], leasenote: "renewing every 60s",
+      log: ["<span>sweep @ t+2m: nothing stale — <b>no action</b></span>"],
+    },
+    {
+      stage: "Step 2 · A slow tool is NOT a stall",
+      cap: "The agent calls a specialist tool that takes 40 minutes. The lease keeps renewing the whole time — so the sweeper sees a live executor, not a stall. This is exactly why the lease exists: the old \"no row write in 10 minutes\" heuristic would have failed this healthy segment as a crash.",
+      run: { status: "running", attempt: 1, age: "31s" },
+      beats: ["ok","ok","ok","ok","ok","ok","ok","ok"], leasenote: "40-minute tool call in progress — still renewing",
+      log: ["<span>sweep @ t+2m: nothing stale — <b>no action</b></span>", "<span>sweep @ t+20m: C1 lease fresh — <b>no action</b></span>"],
+    },
+    {
+      stage: "Step 3 · The executor dies",
+      cap: "The AgentCore session is OOM-killed (or hits its 8-hour SIGTERM). No crash handler runs — the renewals just <em>stop</em>. The run row is frozen at <code>running</code>, and the guarded claim can never recover it: nothing will ever transition it again on its own.",
+      run: { status: "running", attempt: 1, age: "64s" },
+      beats: ["ok","ok","ok","ok","ok","ok","ok","ok","miss"], leasenote: "✗ renewal missed — executor gone",
+      log: ["<span>sweep @ t+20m: C1 lease fresh — <b>no action</b></span>"],
+    },
+    {
+      stage: "Step 4 · Three misses → stalled verdict",
+      cap: "After <code>3 × 60s = 180s</code> without a renewal, the sweep Lambda's guarded UPDATE catches it: <code>running</code> + stale lease + <code>attempt &lt; maxAttempts</code> → reset to <code>pending</code> and re-dispatch (<code>reason: retry</code>, routed by root-vs-child to the right processor).",
+      run: { status: "pending", attempt: 1, age: "192s" },
+      beats: ["ok","ok","ok","ok","ok","ok","ok","ok","miss","miss","miss"], leasenote: "✗ ✗ ✗ — three consecutive misses",
+      log: ["<span>sweep @ t+20m: C1 lease fresh — <b>no action</b></span>", "<span class='hot'>sweep @ t+44m: C1 stalled (lease 192s old, attempt 1/3) — <b>reset to pending, re-dispatching</b></span>"],
+      flash: true,
+    },
+    {
+      stage: "Step 5 · Retry succeeds",
+      cap: "A fresh session claims the run (attempt 2), reloads the transcript from <code>run_message</code>, and completes it. The guarded claim is what makes sweeper re-dispatch always safe — if the original executor were somehow still alive, only one of them could have won the claim.",
+      run: { status: "succeeded", attempt: 2, age: "—" },
+      beats: ["ok","ok","ok"], leasenote: "new executor, new lease",
+      log: ["<span class='hot'>sweep @ t+44m: C1 stalled — <b>reset to pending, re-dispatching</b></span>", "<span>C1 finished: succeeded (attempt 2)</span>"],
+      flash: true,
+    },
+    {
+      stage: "Step 6 · Out of attempts → terminal fail",
+      cap: "The other branch: had this been attempt 3 of 3, the sweeper's second UPDATE fails the run terminally (<code>\"Stalled: executor died and no attempts remain.\"</code>) and routes it through <code>onChildTerminal</code> — same path as a normal child completion, so the plan task is marked failed and the waiting parent is still woken.",
+      run: { status: "failed", attempt: 3, age: "195s" },
+      beats: ["miss","miss","miss"], leasenote: "✗ ✗ ✗ — no attempts remain",
+      log: ["<span class='hot'>sweep: C1 stalled (attempt 3/3) — <b>failing terminally + onChildTerminal</b></span>", "<span>plan_task P1 → failed · parent R1 woken via markRunResumable</span>"],
+      flash: true,
+    },
+    {
+      stage: "Step 7 · The two idle recoveries",
+      cap: "Idle rows use the patient 10-minute window instead: a parent stuck in <code>waiting_on_children</code> whose children are all terminal gets the dropped baton picked up (<code>resumeOrphanedParents</code> → same guarded <code>markRunResumable</code>), and a stale <code>pending</code> row is simply re-dispatched — safe because the guarded claim deduplicates.",
+      run: { status: "waiting_on_children", attempt: 1, age: "11m" },
+      beats: [], leasenote: "no lease — waiting rows are held by nobody",
+      log: ["<span class='hot'>sweep: R1 waiting 11m, zero active children — <b>resuming orphaned parent</b></span>", "<span>run.resumed { triggeredBy: sweeper } · dispatch reason=resume</span>"],
+      flash: true,
+    },
+  ];
+
+  const $run = document.getElementById("s-run");
+  const $beats = document.getElementById("s-beats");
+  const $note = document.getElementById("s-leasenote");
+  const $log = document.getElementById("s-log");
+  const $stage = document.getElementById("s-stage");
+  const $caption = document.getElementById("s-caption");
+
+  steppers.s = makeStepper("s", steps, (s) => {
+    $run.innerHTML = "";
+    const tr = document.createElement("tr");
+    if (s.flash) tr.classList.add("flash");
+    tr.innerHTML =
+      `<td class="mono"><b>C1</b></td>` +
+      `<td><span class="badge ${s.run.status === "waiting_on_children" ? "waiting" : s.run.status}">${s.run.status}</span></td>` +
+      `<td class="mono">${s.run.attempt}</td><td class="mono">${s.run.age}</td>`;
+    $run.appendChild(tr);
+
+    $beats.innerHTML = "";
+    s.beats.forEach(b => {
+      const d = document.createElement("div");
+      d.className = "beat " + b;
+      d.textContent = b === "ok" ? "✓" : "✗";
+      $beats.appendChild(d);
+    });
+    $note.textContent = s.leasenote;
+
+    $log.innerHTML = "";
+    s.log.forEach(l => {
+      const d = document.createElement("div");
+      d.className = "sv" + (l.includes("hot") ? "" : "");
+      d.innerHTML = l;
+      $log.appendChild(d);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+  });
+})();
+
+/* ════════════ 2. Budget stepper ════════════ */
+(function () {
+  const roster = (a, state, last) => ({ a, state, last });
+  const steps = [
+    {
+      stage: "Step 1 · Spend accrues per segment",
+      cap: "Every completed segment increments its run's durable usage counters (<code>costUsd</code>, tokens), so project spend is one cheap <code>SUM</code> over the tree — <code>getProjectSpend</code>. Cap: $100. Current spend: $62.",
+      fill: 62, cap: 88, tag: "spend $62.00 of $100 cap",
+      roster: [roster("Ada", "working", "—"), roster("Bo", "working", "—")],
+      cps: {}, log: ["<span>checkpoints pass: spend &lt; cap — <b>work continues</b></span>"],
+    },
+    {
+      stage: "Step 2 · The cap is crossed mid-segment",
+      cap: "Ada's segment finishes and pushes spend to $104 — over the cap. Nothing happens <em>instantly</em>: enforcement never interrupts a stream. The overshoot is bounded by roughly one segment's cost, by design.",
+      fill: 92, cap: 88, tag: "spend $104.20 of $100 cap — OVER",
+      roster: [roster("Ada", "working", "—"), roster("Bo", "working", "—")],
+      cps: {}, log: ["<span>no gate has run yet — <b>segments in flight finish normally</b></span>"],
+    },
+    {
+      stage: "Step 3 · The next checkpoint fires",
+      cap: "Ada's child completes → <code>onChildTerminal</code> runs the gate before resuming her parent. <code>enforceProjectBudget</code>: spend ≥ cap → stamp <code>budgetExceededAt</code> exactly once (concurrent workers race on an <code>IS NULL</code> guard, so the UI alert fires a single time).",
+      fill: 92, cap: 88, tag: "spend $104.20 — budgetExceededAt stamped",
+      roster: [roster("Ada", "working", "—"), roster("Bo", "working", "—")],
+      cps: { resume: "OVER — stop" }, log: ["<span class='hot'>[budget] project exceeded $100 (spend $104.20), <b>stopping agents</b></span>"],
+    },
+    {
+      stage: "Step 4 · Every roster tree is cancelled",
+      cap: "Enforcement mirrors <code>stopProjectAgent</code> across the whole roster: <code>cancelRunTree(activeRunId)</code> for each working agent (one guarded UPDATE per tree), roster flags reset to <code>idle</code> with <code>lastResult: \"Stopped: project budget exceeded.\"</code> Running workers discover it exactly like any cancellation — see section 3.",
+      fill: 92, cap: 88, tag: "spend $104.20 — all agents stopped",
+      roster: [roster("Ada", "idle", "Stopped: budget exceeded"), roster("Bo", "idle", "Stopped: budget exceeded")],
+      cps: { start: "OVER — refuse", resume: "OVER — stop", pulse: "OVER — pause" },
+      log: ["<span class='hot'>cancelRunTree × 2 · roster → idle</span>", "<span>startLeadPulse: \"budget exceeded — automated pulses paused\"</span>"],
+      flash: true,
+    },
+    {
+      stage: "Step 5 · Raising the cap auto-resumes",
+      cap: "The owner raises the cap to $150. No un-stamp step exists or is needed: every gate checks <b>live spend against the current cap</b>, not the <code>budgetExceededAt</code> stamp (that only drives the UI alert). The next start or pulse simply passes.",
+      fill: 61, cap: 132, tag: "spend $104.20 of $150 cap — under again",
+      roster: [roster("Ada", "idle", "Stopped: budget exceeded"), roster("Bo", "idle", "Stopped: budget exceeded")],
+      cps: {}, log: ["<span>cap raised to $150 — <b>gates pass again, pulses resume automatically</b></span>"],
+    },
+  ];
+
+  const $fill = document.getElementById("b-fill");
+  const $cap = document.getElementById("b-cap");
+  const $tag = document.getElementById("b-tag");
+  const $roster = document.getElementById("b-roster");
+  const $log = document.getElementById("b-log");
+  const $stage = document.getElementById("b-stage");
+  const $caption = document.getElementById("b-caption");
+  const cps = { start: "cpv-start", resume: "cpv-resume", pulse: "cpv-pulse" };
+
+  steppers.b = makeStepper("b", steps, (s) => {
+    $fill.style.width = s.fill + "%";
+    $cap.style.left = s.cap + "%";
+    $tag.textContent = s.tag;
+
+    $roster.innerHTML = "";
+    s.roster.forEach(r => {
+      const tr = document.createElement("tr");
+      if (s.flash) tr.classList.add("flash");
+      tr.innerHTML =
+        `<td class="mono"><b>${r.a}</b></td>` +
+        `<td><span class="badge ${r.state}">${r.state}</span></td>` +
+        `<td style="color:var(--muted);font-size:.74rem">${r.last}</td>`;
+      $roster.appendChild(tr);
+    });
+
+    Object.entries(cps).forEach(([key, id]) => {
+      const el = document.getElementById("cp-" + key);
+      const v = document.getElementById(id);
+      const verdict = s.cps[key];
+      el.classList.toggle("hit", !!verdict);
+      v.textContent = verdict || "—";
+    });
+
+    $log.innerHTML = "";
+    s.log.forEach(l => {
+      const d = document.createElement("div");
+      d.className = "sv";
+      d.innerHTML = l;
+      $log.appendChild(d);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap2 || s.cap;
+  });
+})();
+
+/* ════════════ 3. Cancellation pickup stepper ════════════ */
+(function () {
+  const tree = (id, role, status) => ({ id, role, status });
+  const worker = (id, cls, state, body) => ({ id, cls, state, body });
+
+  const steps = [
+    {
+      stage: "Step 1 · A tree is running",
+      cap: "Ada's root orchestrator <code>R1</code> is <code>waiting_on_children</code>; children <code>C1</code> and <code>C2</code> are mid-LLM-turn in their own AgentCore sessions. Each worker started a background stop-signal poller (2s interval) watching its own run row when the segment began.",
+      tree: [tree("R1", "root (Ada)", "waiting_on_children"), tree("C1", "child", "running"), tree("C2", "child", "running")],
+      roster: [{ a: "Ada", state: "working", run: "R1" }],
+      workers: [
+        worker("C1 · session S2", "busy", "● executing", "LLM turn in progress · poller: row is running → keep going"),
+        worker("C2 · session S3", "busy", "● executing", "long tool call in flight · poller: row is running → keep going"),
+      ],
+    },
+    {
+      stage: "Step 2 · The lead pulls the trigger",
+      cap: "The Team Lead calls <code>stopProjectAgent(Ada)</code> → <code>cancelRunTree(R1)</code>: <b>one guarded UPDATE</b> flips every still-active run in the tree (<code>WHERE rootRunId = R1 AND status IN active</code>) to <code>cancelled</code> with a \"Stopped by user/team lead\" result. No message is sent to any worker — the database is the only communication channel.",
+      tree: [tree("R1", "root (Ada)", "cancelled"), tree("C1", "child", "cancelled"), tree("C2", "child", "cancelled")],
+      roster: [{ a: "Ada", state: "working", run: "R1" }],
+      workers: [
+        worker("C1 · session S2", "busy", "● executing (unaware)", "still generating tokens — nothing has told it anything"),
+        worker("C2 · session S3", "busy", "● executing (unaware)", "still inside its tool call"),
+      ],
+      flash: true,
+    },
+    {
+      stage: "Step 3 · Pickup 1 — the poller aborts mid-turn",
+      cap: "Within ~2 seconds, C1's stop-signal poller reads its row, sees <code>cancelled</code> (terminal), and fires <code>AbortController.abort()</code> — the LLM stream halts mid-generation. The processor gets <code>stopReason: \"stopped\"</code>, skips <code>finishRun</code> (it would be a guarded no-op anyway), EOFs the durable stream, and returns. The invocation settles; the session can idle out.",
+      tree: [tree("R1", "root (Ada)", "cancelled"), tree("C1", "child", "cancelled"), tree("C2", "child", "cancelled")],
+      roster: [{ a: "Ada", state: "working", run: "R1" }],
+      workers: [
+        worker("C1 · session S2", "aborted", "✗ aborted", "poller: row cancelled → abort() → stream halted mid-turn · stream EOF'd"),
+        worker("C2 · session S3", "busy", "● executing (unaware)", "poller can't interrupt a blocking tool call — it checks between ticks"),
+      ],
+    },
+    {
+      stage: "Step 4 · Pickup 2 — guarded transitions drop late work",
+      cap: "C2's tool call finally returns and its segment tries to finish: <code>finishRun(C2, succeeded)</code> → <code>WHERE status IN (active)</code> matches nothing (<code>cancelled</code> is terminal) → zero rows → the result is dropped silently. Same for a yield, a lease renewal, or a resume: <b>every transition the dead work could attempt is guarded</b>. It cannot write itself back to life.",
+      tree: [tree("R1", "root (Ada)", "cancelled"), tree("C1", "child", "cancelled"), tree("C2", "child", "cancelled")],
+      roster: [{ a: "Ada", state: "working", run: "R1" }],
+      workers: [
+        worker("C1 · session S2", "gone", "settled", "—"),
+        worker("C2 · session S3", "aborted", "✗ work dropped", "finishRun → 0 rows · renewRunLease → false · segment returns"),
+      ],
+    },
+    {
+      stage: "Step 5 · Pickup 3 — no new orphans",
+      cap: "Had R1 been mid-turn planning more work, <code>spawnSubagents</code> re-reads the parent row before creating any child: terminal parent → <code>\"This run has been stopped; no new sub-agents can be spawned.\"</code> Children created after the cancel would be unstoppable orphans — this check is why they can't exist.",
+      tree: [tree("R1", "root (Ada)", "cancelled"), tree("C1", "child", "cancelled"), tree("C2", "child", "cancelled")],
+      roster: [{ a: "Ada", state: "working", run: "R1" }],
+      workers: [
+        worker("R1 (hypothetical resume)", "aborted", "✗ spawn refused", "spawn_subagents → error: run has been stopped"),
+      ],
+    },
+    {
+      stage: "Step 6 · Roster reset, race-safe",
+      cap: "Back in <code>stopProjectAgent</code>: the roster row flips to <code>idle</code> / <code>activeRunId: null</code>, <b>guarded on the exact run it cancelled</b> — a concurrent start that already claimed the slot with a new run is never clobbered. If the tree had actually finished on its own a moment earlier (<code>cancelRunTree</code> returned 0), the run's real result is preserved as <code>lastResult</code> instead of the cancelled stub. The flip broadcasts to the UI via the <code>projectAgents</code> Electric shape.",
+      tree: [tree("R1", "root (Ada)", "cancelled"), tree("C1", "child", "cancelled"), tree("C2", "child", "cancelled")],
+      roster: [{ a: "Ada", state: "idle", run: "null" }],
+      workers: [
+        worker("all sessions", "gone", "settled / reaped", "inFlight 0 → Healthy → idle timeout"),
+      ],
+      flash: true,
+    },
+  ];
+
+  const $tree = document.getElementById("c-tree");
+  const $roster = document.getElementById("c-roster");
+  const $workers = document.getElementById("c-workers");
+  const $stage = document.getElementById("c-stage");
+  const $caption = document.getElementById("c-caption");
+
+  steppers.c = makeStepper("c", steps, (s) => {
+    $tree.innerHTML = "";
+    s.tree.forEach(t => {
+      const tr = document.createElement("tr");
+      if (s.flash) tr.classList.add("flash");
+      tr.innerHTML =
+        `<td class="mono"><b>${t.id}</b></td><td style="color:var(--muted)">${t.role}</td>` +
+        `<td><span class="badge ${t.status === "waiting_on_children" ? "waiting" : t.status}">${t.status}</span></td>`;
+      $tree.appendChild(tr);
+    });
+
+    $roster.innerHTML = "";
+    s.roster.forEach(r => {
+      const tr = document.createElement("tr");
+      if (s.flash) tr.classList.add("flash");
+      tr.innerHTML =
+        `<td class="mono"><b>${r.a}</b></td>` +
+        `<td><span class="badge ${r.state}">${r.state}</span></td>` +
+        `<td class="mono">${r.run}</td>`;
+      $roster.appendChild(tr);
+    });
+
+    $workers.innerHTML = "";
+    s.workers.forEach(w => {
+      const d = document.createElement("div");
+      d.className = "wpane " + w.cls;
+      d.innerHTML =
+        `<div class="wtitle"><span>${w.id}</span><span class="wstate">${w.state}</span></div>` +
+        `<div class="wbody">${w.body}</div>`;
+      $workers.appendChild(d);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+  });
+})();
+</script>
+</body>
+</html>

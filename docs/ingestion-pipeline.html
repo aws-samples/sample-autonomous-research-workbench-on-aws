@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Document Ingestion Pipeline — Animated Walkthrough</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2330;
+    --border: #2d3646;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+
+  header {
+    padding: 64px 24px 40px; text-align: center;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(57,197,207,.16), transparent),
+      radial-gradient(ellipse 40% 60% at 80% 0%, rgba(88,166,255,.10), transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  header p.sub { color: var(--muted); margin-top: 10px; max-width: 760px; margin-left: auto; margin-right: auto; }
+  .keyline {
+    display: inline-block; margin-top: 22px; padding: 10px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--cyan); font-weight: 600;
+  }
+  nav.crumbs { padding: 14px 24px; font-size: .82rem; color: var(--muted); }
+  nav.crumbs a { color: var(--accent); text-decoration: none; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 24px 120px; }
+  section { margin-top: 72px; }
+  section > h2 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  section > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+    background: rgba(57,197,207,.15); color: var(--cyan); font-size: .9rem;
+  }
+  section > p.lead { color: var(--muted); margin-top: 8px; max-width: 840px; }
+  .panel { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+
+  .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .72rem;
+    color: var(--cyan); cursor: pointer; transition: border-color .2s;
+  }
+  .file-chip:hover { border-color: var(--cyan); }
+  .file-chip::before { content: "📄"; font-size: .8rem; }
+  .file-chip.copied { border-color: var(--green); color: var(--green); }
+  .file-chip.copied::after { content: " copied"; color: var(--green); font-size: .68rem; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    border: 1px solid transparent; white-space: nowrap; transition: all .4s;
+  }
+  .badge.pending  { background: rgba(139,152,169,.14); color: var(--muted); border-color: rgba(139,152,169,.35); }
+  .badge.indexed  { background: rgba(63,185,80,.14); color: var(--green); border-color: rgba(63,185,80,.4); }
+  .badge.failed   { background: rgba(248,81,73,.14); color: var(--red); border-color: rgba(248,81,73,.4); }
+  .badge.missing  { background: transparent; color: #4a5568; border-color: rgba(74,85,104,.5); }
+
+  /* DAG */
+  .dag-wrap { display: flex; justify-content: center; overflow-x: auto; }
+  .dag-node rect {
+    fill: var(--panel2); stroke: var(--border); stroke-width: 1.5;
+    transition: stroke .4s, fill .4s;
+  }
+  .dag-node text { fill: var(--text); font-size: 12px; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .dag-node .sublabel { fill: var(--muted); font-size: 9.5px; font-weight: 400; }
+  .dag-node.active rect { stroke: var(--cyan); fill: rgba(57,197,207,.13); }
+  .dag-node.done rect { stroke: rgba(63,185,80,.6); }
+  .dag-node.fail rect { stroke: var(--red); fill: rgba(248,81,73,.1); }
+  .dag-edge { stroke: var(--border); stroke-width: 1.6; fill: none; marker-end: url(#dagarrow); transition: stroke .4s; }
+  .dag-edge.active { stroke: var(--cyan); stroke-width: 2.4; }
+  .dag-store rect { fill: rgba(88,166,255,.06); stroke: rgba(88,166,255,.35); stroke-dasharray: 5 4; }
+  .dag-store text { fill: var(--accent); }
+  .dag-note { fill: var(--muted); font-size: 10px; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+
+  /* documents table */
+  table.state { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  table.state th {
+    text-align: left; color: var(--muted); font-weight: 600; font-size: .72rem;
+    text-transform: uppercase; letter-spacing: .06em;
+    padding: 6px 10px; border-bottom: 1px solid var(--border);
+  }
+  table.state td { padding: 8px 10px; border-bottom: 1px solid rgba(45,54,70,.5); }
+  table.state tr.flash td { animation: rowflash 1.1s ease; }
+  @keyframes rowflash { 0% { background: rgba(57,197,207,.2); } 100% { background: transparent; } }
+  table.state tr.appear { animation: rowappear .5s ease; }
+  @keyframes rowappear { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  .walk-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .tbl { color: var(--cyan); font-family: "SF Mono", ui-monospace, Menlo, monospace; text-transform: none; letter-spacing: 0; font-size: .76rem; }
+
+  .caption {
+    margin-top: 18px; padding: 18px 20px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(57,197,207,.08), rgba(57,197,207,.03));
+    border: 1px solid rgba(57,197,207,.25); min-height: 96px;
+  }
+  .caption .stage { color: var(--cyan); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+  .caption p { margin-top: 6px; font-size: .95rem; }
+  .caption p code { background: rgba(57,197,207,.12); padding: 1px 6px; border-radius: 5px; font-size: .85em; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  button.ctl {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 22px; font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  button.ctl:hover:not(:disabled) { border-color: var(--cyan); background: rgba(57,197,207,.1); }
+  button.ctl:disabled { opacity: .35; cursor: default; }
+  button.ctl.primary { background: var(--cyan); color: #0d1117; border-color: var(--cyan); }
+  button.ctl.primary:hover:not(:disabled) { background: #6fdde5; }
+  .progress { flex: 1; display: flex; gap: 5px; min-width: 160px; }
+  .progress .tick { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background .3s; }
+  .progress .tick.done { background: var(--cyan); }
+  .stepcount { color: var(--muted); font-size: .8rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82em; background: var(--panel2); }
+
+  .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
+  .icard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .icard .ic-title { font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+  .icard .ic-title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--cyan); flex: 0 0 auto; }
+  .icard p { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .icard p code { background: rgba(88,166,255,.12); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 40px 0 60px; border-top: 1px solid var(--border); margin-top: 80px; }
+</style>
+</head>
+<body>
+
+<nav class="crumbs"><a href="index.html">← All animations</a></nav>
+
+<header>
+  <h1>Document Ingestion Pipeline</h1>
+  <p class="sub">One Step Functions execution turns every pending document in the knowledge bucket into <em>two independent indexes</em>: a Neptune knowledge graph and an S3-backed LanceDB vector store.</p>
+  <div class="keyline">One document in → two indexes out, each with its own status.</div>
+</header>
+
+<main>
+
+<!-- ══════════════ 1. THE DAG WALKTHROUGH ══════════════ -->
+<section id="dag">
+  <h2><span class="num">1</span> The pipeline, step by step</h2>
+  <p class="lead">Two files land in the bucket: <code class="mono">report.pdf</code> (uploaded via the app — has a Postgres row) and <code class="mono">slides.pptx</code> (dropped straight into S3 — no row at all). Watch the pipeline reconcile, fan out, and record per-document outcomes.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>State machine <span class="tbl">Step Functions · Distributed Map</span></h3>
+      <div class="dag-wrap">
+        <svg id="dag-svg" width="1020" height="330" viewBox="0 0 1020 330">
+          <defs>
+            <marker id="dagarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5568"/>
+            </marker>
+          </defs>
+
+          <!-- S3 source -->
+          <g id="n-s3" class="dag-node dag-store">
+            <rect x="10" y="120" width="120" height="56" rx="10"/>
+            <text x="70" y="144" text-anchor="middle">knowledge</text>
+            <text x="70" y="160" text-anchor="middle">S3 bucket</text>
+          </g>
+
+          <!-- WriteOntology -->
+          <g id="n-onto" class="dag-node">
+            <rect x="170" y="60" width="130" height="50" rx="10"/>
+            <text x="235" y="82" text-anchor="middle">WriteOntology</text>
+            <text x="235" y="98" text-anchor="middle" class="sublabel">once, stamps run_at</text>
+          </g>
+
+          <!-- BuildManifest -->
+          <g id="n-manifest" class="dag-node">
+            <rect x="170" y="180" width="130" height="56" rx="10"/>
+            <text x="235" y="202" text-anchor="middle">BuildManifest</text>
+            <text x="235" y="218" text-anchor="middle" class="sublabel">S3 vs Postgres,</text>
+            <text x="235" y="230" text-anchor="middle" class="sublabel">self-heals rows</text>
+          </g>
+
+          <!-- Ingest -->
+          <g id="n-ingest" class="dag-node">
+            <rect x="360" y="120" width="130" height="56" rx="10"/>
+            <text x="425" y="142" text-anchor="middle">Ingest</text>
+            <text x="425" y="158" text-anchor="middle" class="sublabel">Docling, 10 GB λ,</text>
+            <text x="425" y="170" text-anchor="middle" class="sublabel">arm64 container</text>
+          </g>
+
+          <!-- Extract -->
+          <g id="n-extract" class="dag-node">
+            <rect x="550" y="40" width="130" height="50" rx="10"/>
+            <text x="615" y="62" text-anchor="middle">Extract</text>
+            <text x="615" y="78" text-anchor="middle" class="sublabel">Bedrock triples</text>
+          </g>
+
+          <!-- WriteGraph -->
+          <g id="n-writegraph" class="dag-node">
+            <rect x="720" y="40" width="130" height="50" rx="10"/>
+            <text x="785" y="62" text-anchor="middle">WriteGraph</text>
+            <text x="785" y="78" text-anchor="middle" class="sublabel">Neptune MERGE</text>
+          </g>
+
+          <!-- Semantic -->
+          <g id="n-semantic" class="dag-node">
+            <rect x="550" y="200" width="300" height="50" rx="10"/>
+            <text x="700" y="222" text-anchor="middle">Semantic</text>
+            <text x="700" y="238" text-anchor="middle" class="sublabel">Docling w/ images → Cohere Embed v4 → LanceDB</text>
+          </g>
+
+          <!-- WriteStatus -->
+          <g id="n-status" class="dag-node">
+            <rect x="890" y="120" width="120" height="56" rx="10"/>
+            <text x="950" y="142" text-anchor="middle">WriteStatus</text>
+            <text x="950" y="158" text-anchor="middle" class="sublabel">→ Postgres</text>
+          </g>
+
+          <!-- stores -->
+          <g id="n-neptune" class="dag-node dag-store">
+            <rect x="720" y="120" width="130" height="40" rx="10"/>
+            <text x="785" y="144" text-anchor="middle">Neptune graph</text>
+          </g>
+          <g id="n-lancedb" class="dag-node dag-store">
+            <rect x="550" y="275" width="300" height="40" rx="10"/>
+            <text x="700" y="299" text-anchor="middle">LanceDB on S3 (semantic bucket)</text>
+          </g>
+
+          <!-- edges -->
+          <path id="e-s3-onto" class="dag-edge" d="M 130 135 C 150 120, 150 95, 168 88"/>
+          <path id="e-onto-man" class="dag-edge" d="M 235 110 L 235 178"/>
+          <path id="e-man-ingest" class="dag-edge" d="M 300 205 C 330 195, 335 165, 358 152"/>
+          <path id="e-ingest-extract" class="dag-edge" d="M 490 135 C 520 120, 520 80, 548 68"/>
+          <path id="e-extract-wg" class="dag-edge" d="M 680 65 L 718 65"/>
+          <path id="e-wg-neptune" class="dag-edge" d="M 785 90 L 785 118"/>
+          <path id="e-ingest-sem" class="dag-edge" d="M 490 160 C 520 175, 520 210, 548 220"/>
+          <path id="e-sem-lance" class="dag-edge" d="M 700 250 L 700 273"/>
+          <path id="e-wg-status" class="dag-edge" d="M 850 62 C 890 70, 910 95, 935 118"/>
+          <path id="e-sem-status" class="dag-edge" d="M 850 222 C 890 215, 910 190, 935 178"/>
+
+          <text class="dag-note" x="360" y="105">map over pending manifest, per file:</text>
+          <rect x="350" y="20" width="520" height="245" rx="12" fill="none" stroke="#2d3646" stroke-dasharray="4 5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Documents <span class="tbl">document (Postgres) — two independent statuses</span></h3>
+      <table class="state">
+        <thead><tr><th>file</th><th>row exists</th><th>indexStatus (LanceDB)</th><th>graphIndexStatus (Neptune)</th></tr></thead>
+        <tbody id="d-docs"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="d-stage"></div>
+    <p id="d-caption"></p>
+  </div>
+
+  <div class="controls">
+    <button class="ctl" id="d-prev">← Back</button>
+    <button class="ctl primary" id="d-next">Next →</button>
+    <div class="progress" id="d-progress"></div>
+    <span class="stepcount" id="d-stepcount"></span>
+    <button class="ctl" id="d-reset">Reset</button>
+  </div>
+  <p style="color: var(--muted); font-size: .78rem; margin-top: 10px;">Tip: use <span class="kbd">←</span> <span class="kbd">→</span> arrow keys to step.</p>
+
+  <div class="files">
+    <span class="file-chip" data-path="apps/infra/lib/stacks/step-function-ingestion-stack.ts">apps/infra/lib/stacks/step-function-ingestion-stack.ts</span>
+    <span class="file-chip" data-path="apps/infra/lib/lambda/ingestion/graph/build_manifest.py">apps/infra/lib/lambda/ingestion/graph/build_manifest.py</span>
+    <span class="file-chip" data-path="apps/infra/lib/lambda/ingestion/graph/write_graph.py">apps/infra/lib/lambda/ingestion/graph/write_graph.py</span>
+    <span class="file-chip" data-path="apps/infra/lib/lambda/ingestion/graph/write_status.py">apps/infra/lib/lambda/ingestion/graph/write_status.py</span>
+    <span class="file-chip" data-path="packages/database/schema.ts">packages/database/schema.ts (IndexStatus enum)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 2. DESIGN NOTES ══════════════ -->
+<section id="notes">
+  <h2><span class="num">2</span> Design details worth knowing</h2>
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Pointers, not payloads</div>
+      <p>Stages hand off multi-megabyte document text and infons via S3 artifacts in the semantic bucket — only small pointers travel through the state machine, staying well under Step Functions' 256 KB state limit.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Self-healing manifest</div>
+      <p>BuildManifest reconciles the S3 listing against Postgres: any object without a document row gets a <code>pending</code> row created for it. Direct-to-S3 uploads just work — no API call required.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Two statuses per document</div>
+      <p><code>indexStatus</code> (vector) and <code>graphIndexStatus</code> (graph) are tracked independently. One branch can fail while the other succeeds — and only the failed one is retried on the next run, because the manifest skips already-indexed work per index.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Idempotent graph writes</div>
+      <p>WriteGraph MERGEs reified <code>(:Infon)</code> facts into Neptune over Bolt with SigV4-signed connections. Re-running a document converges on the same nodes instead of duplicating them.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Retries per stage</div>
+      <p>Each Lambda stage retries transient errors (Lambda throttles, Bedrock hiccups, <code>States.TaskFailed</code>) 3 times with exponential backoff before the branch is marked failed.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Who reads the indexes</div>
+      <p>Agents query LanceDB through <code>queryDocuments</code> (hybrid vector + BM25 + rerank) and Neptune through the graph tools (search, neighborhood, paths, overview). The web explorer reads the same graph.</p>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/tools/documents/query.ts">packages/agent/core/tools/documents/query.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/tools/graph/search.ts">packages/agent/core/tools/graph/search.ts</span>
+    <span class="file-chip" data-path="apps/infra/lib/stacks/storage-stack.ts">apps/infra/lib/stacks/storage-stack.ts</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Invoke the state machine with <span class="mono">{}</span> to process every pending object in the bucket · statuses live in Postgres · indexes live in Neptune + LanceDB.
+</footer>
+
+<script>
+/* file chips */
+document.querySelectorAll(".file-chip").forEach(chip => {
+  chip.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(chip.dataset.path);
+      chip.classList.add("copied");
+      setTimeout(() => chip.classList.remove("copied"), 1400);
+    } catch { /* file:// clipboard may be unavailable */ }
+  });
+});
+
+/* ════════════ DAG stepper ════════════ */
+(function () {
+  // doc: [file, rowExists, indexStatus, graphIndexStatus]
+  const doc = (file, row, idx, gidx) => ({ file, row, idx, gidx });
+
+  const steps = [
+    {
+      stage: "Step 1 · Files land in S3",
+      cap: "<code>report.pdf</code> was uploaded through the app, so Postgres already has its document row (<code>pending</code>/<code>pending</code>). <code>slides.pptx</code> was dropped straight into the bucket — no row exists at all. Both are fine: the pipeline reconciles later.",
+      nodes: { "n-s3": "active" }, edges: [],
+      docs: [doc("report.pdf", "yes", "pending", "pending"), doc("slides.pptx", "no", null, null)],
+      flash: ["slides.pptx"],
+    },
+    {
+      stage: "Step 2 · WriteOntology (once)",
+      cap: "The execution starts with a single <code>WriteOntology</code> call: the predicate vocabulary is written to Neptune and a <code>run_at</code> timestamp is minted — threaded into every per-file item so all documents in this run share one logical write time.",
+      nodes: { "n-onto": "active" }, edges: ["e-s3-onto"],
+      docs: [doc("report.pdf", "yes", "pending", "pending"), doc("slides.pptx", "no", null, null)],
+    },
+    {
+      stage: "Step 3 · BuildManifest reconciles",
+      cap: "<code>BuildManifest</code> lists the bucket and compares against Postgres. <code>slides.pptx</code> has no row → one is <b>self-healed</b> into existence as <code>pending</code>. The pending set is written to <code>manifests/pending.json</code>; already-indexed files are skipped entirely.",
+      nodes: { "n-onto": "done", "n-manifest": "active" }, edges: ["e-onto-man"],
+      docs: [doc("report.pdf", "yes", "pending", "pending"), doc("slides.pptx", "yes", "pending", "pending")],
+      flash: ["slides.pptx"],
+    },
+    {
+      stage: "Step 4 · Ingest (per file)",
+      cap: "The Distributed Map iterates the manifest. For <code>report.pdf</code>, the <code>Ingest</code> stage — a 10 GB arm64 container Lambda running Docling — converts the document to text. The multi-megabyte output is written to S3; only a <em>pointer</em> flows onward through the state machine (256 KB state limit).",
+      nodes: { "n-onto": "done", "n-manifest": "done", "n-ingest": "active" }, edges: ["e-man-ingest"],
+      docs: [doc("report.pdf", "yes", "pending", "pending"), doc("slides.pptx", "yes", "pending", "pending")],
+    },
+    {
+      stage: "Step 5 · Parallel fan-out",
+      cap: "A Parallel state splits into two independent branches consuming the same ingested text: the <b>graph branch</b> (Extract pulls subject–predicate–object triples via Bedrock, WriteGraph MERGEs them into Neptune) and the <b>semantic branch</b> (image-aware conversion → Cohere Embed v4 → append to LanceDB on S3).",
+      nodes: { "n-onto": "done", "n-manifest": "done", "n-ingest": "done", "n-extract": "active", "n-writegraph": "active", "n-semantic": "active", "n-neptune": "active", "n-lancedb": "active" },
+      edges: ["e-ingest-extract", "e-extract-wg", "e-wg-neptune", "e-ingest-sem", "e-sem-lance"],
+      docs: [doc("report.pdf", "yes", "pending", "pending"), doc("slides.pptx", "yes", "pending", "pending")],
+    },
+    {
+      stage: "Step 6 · Join → WriteStatus",
+      cap: "Both branches succeed for <code>report.pdf</code>. Their results join into a <code>[graph, semantic]</code> array that flows into <code>WriteStatus</code> — an in-VPC Lambda that upserts the two statuses independently: <code>indexStatus = indexed</code>, <code>graphIndexStatus = indexed</code>.",
+      nodes: { "n-onto": "done", "n-manifest": "done", "n-ingest": "done", "n-extract": "done", "n-writegraph": "done", "n-semantic": "done", "n-status": "active" },
+      edges: ["e-wg-status", "e-sem-status"],
+      docs: [doc("report.pdf", "yes", "indexed", "indexed"), doc("slides.pptx", "yes", "pending", "pending")],
+      flash: ["report.pdf"],
+    },
+    {
+      stage: "Step 7 · A branch fails independently",
+      cap: "Now <code>slides.pptx</code>: the semantic branch succeeds, but triple extraction errors three times (retry policy exhausted) and the graph branch fails. <code>WriteStatus</code> still runs — and records the split verdict: <code>indexStatus = indexed</code>, <code>graphIndexStatus = failed</code>. The two indexes never drag each other down.",
+      nodes: { "n-onto": "done", "n-manifest": "done", "n-ingest": "done", "n-extract": "fail", "n-writegraph": "fail", "n-semantic": "done", "n-status": "active" },
+      edges: ["e-sem-status"],
+      docs: [doc("report.pdf", "yes", "indexed", "indexed"), doc("slides.pptx", "yes", "indexed", "failed")],
+      flash: ["slides.pptx"],
+    },
+    {
+      stage: "Step 8 · Next run heals the gap",
+      cap: "On the next execution, <code>BuildManifest</code> sees <code>slides.pptx</code> is vector-indexed but graph-failed — only the missing work is redone. Meanwhile agents are already querying: <code>queryDocuments</code> hits LanceDB (hybrid vector + BM25 + rerank), the graph tools traverse Neptune, and agent-authored facts land in the very same graph shape.",
+      nodes: { "n-manifest": "active", "n-neptune": "active", "n-lancedb": "active" }, edges: [],
+      docs: [doc("report.pdf", "yes", "indexed", "indexed"), doc("slides.pptx", "yes", "indexed", "pending")],
+      flash: ["slides.pptx"],
+    },
+  ];
+
+  let idx = 0;
+  const $docs = document.getElementById("d-docs");
+  const $stage = document.getElementById("d-stage");
+  const $caption = document.getElementById("d-caption");
+  const $progress = document.getElementById("d-progress");
+  const $stepcount = document.getElementById("d-stepcount");
+  const $prev = document.getElementById("d-prev");
+  const $next = document.getElementById("d-next");
+
+  steps.forEach(() => {
+    const t = document.createElement("div");
+    t.className = "tick";
+    $progress.appendChild(t);
+  });
+
+  function badge(v) {
+    if (v === null) return `<span class="badge missing">no row</span>`;
+    return `<span class="badge ${v}">${v}</span>`;
+  }
+
+  function render() {
+    const s = steps[idx];
+
+    // DAG highlighting
+    document.querySelectorAll(".dag-node").forEach(n => n.classList.remove("active", "done", "fail"));
+    document.querySelectorAll(".dag-edge").forEach(e => e.classList.remove("active"));
+    Object.entries(s.nodes).forEach(([id, cls]) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add(cls);
+    });
+    s.edges.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
+    });
+
+    // docs table
+    $docs.innerHTML = "";
+    s.docs.forEach(d => {
+      const tr = document.createElement("tr");
+      if (s.flash && s.flash.includes(d.file)) tr.classList.add("flash");
+      tr.innerHTML =
+        `<td class="mono"><b>${d.file}</b></td>` +
+        `<td class="mono" style="color:${d.row === "yes" ? "var(--green)" : "var(--red)"}">${d.row}</td>` +
+        `<td>${badge(d.idx)}</td><td>${badge(d.gidx)}</td>`;
+      $docs.appendChild(tr);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+    [...$progress.children].forEach((t, i) => t.classList.toggle("done", i <= idx));
+    $stepcount.textContent = `step ${idx + 1} / ${steps.length}`;
+    $prev.disabled = idx === 0;
+    $next.disabled = idx === steps.length - 1;
+  }
+
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n >= steps.length) return;
+    idx = n;
+    render();
+  }
+  $next.addEventListener("click", () => go(1));
+  $prev.addEventListener("click", () => go(-1));
+  document.getElementById("d-reset").addEventListener("click", () => { idx = 0; render(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") go(1);
+    if (e.key === "ArrowLeft") go(-1);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+# Production durable-streams server.
+#
+# Unlike Dockerfile (the dev/testing Node `@durable-streams/server`), this
+# builds the Caddy-plugin binary `durable-streams-server` from source — the
+# recommended production build per https://durablestreams.com/deployment.
+#
+# The upstream install.sh resolves binaries from `caddy-v{VERSION}` release
+# tags, which aren't published, so its download path 404s. Building from the
+# pinned Go module is the deterministic route. Pinned to tag v0.3.0 (latest).
+#
+# This image declares no HEALTHCHECK on purpose. Its only consumer is the ECS
+# task definition in durable-streams-stack.ts, and a container-definition
+# healthCheck overrides any HEALTHCHECK baked into the image
+# (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html),
+# so an instruction here would be dead weight that can silently drift from the
+# check that actually runs. The liveness probe lives with the task definition.
+# checkov:skip=CKV_DOCKER_2: liveness is the ECS container healthCheck in durable-streams-stack.ts, which overrides any image HEALTHCHECK
+
+# ── Build stage ──────────────────────────────────────────────────────────────
+FROM golang:1.25-bookworm AS build
+
+ARG DURABLE_STREAMS_VERSION=v0.3.0
+
+# Fetch modules via a CDN-backed proxy mirror. The default proxy.golang.org is
+# intermittently unreachable from some networks (DNS to its CDN times out),
+# which breaks the build; goproxy.io is a drop-in global mirror that also
+# proxies the checksum database, so GOSUMDB verification still works. `direct`
+# remains the final fallback.
+ENV GOPROXY=https://goproxy.io,direct
+
+WORKDIR /src
+
+# The Caddy plugin (and its cmd/caddy entrypoint) live in a subdirectory module.
+# checkov:skip=CKV_DOCKER_4: ADD git-ref fetch has no COPY equivalent; source is remote
+ADD https://github.com/durable-streams/durable-streams.git#${DURABLE_STREAMS_VERSION} .
+
+WORKDIR /src/packages/caddy-plugin
+RUN go build -trimpath -ldflags="-s -w" -o /out/durable-streams-server ./cmd/caddy
+
+# ── Runtime stage ────────────────────────────────────────────────────────────
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /out/durable-streams-server /usr/local/bin/durable-streams-server
+COPY Caddyfile /etc/durable-streams/Caddyfile
+
+# No VOLUME for /data: under ECS the path is backed by an EFS mount, and a
+# Dockerfile VOLUME would only spawn orphaned anonymous volumes on local
+# `docker run` while masking persistence bugs.
+EXPOSE 4437
+
+# Drop root. uid/gid 1000 is not arbitrary: it matches the EFS access point's
+# posixUser in durable-streams-stack.ts, so the mounted /data stays writable.
+# debian:bookworm-slim has no such user, so create it.
+RUN groupadd --gid 1000 durable-streams \
+    && useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin \
+        durable-streams \
+    && mkdir -p /data \
+    && chown -R 1000:1000 /data
+USER 1000:1000
+
+CMD ["durable-streams-server", "run", "--config", "/etc/durable-streams/Caddyfile"]

@@ -1,0 +1,36 @@
+{
+  "name": "@workbench/infra",
+  "version": "0.1.0",
+  "description": "CDK infrastructure platform",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "watch": "tsc --noEmit -w",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "bootstrap": "cdk bootstrap"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "3.700.0",
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
+    "aws-cdk": "^2.170.0",
+    "cdk-nag": "3.0.1",
+    "esbuild": "^0.28.1",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.4.0"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-bedrock-agentcore-alpha": "2.261.0-alpha.0",
+    "@aws-cdk/aws-elasticache-alpha": "2.261.0-alpha.0",
+    "@aws-cdk/aws-lambda-python-alpha": "2.260.0-alpha.0",
+    "@aws-cdk/aws-neptune-alpha": "2.260.0-alpha.0",
+    "@aws-sdk/client-bedrock-agentcore": "^3.1075.0",
+    "@aws-sdk/client-secrets-manager": "^3.1080.0",
+    "aws-cdk-lib": "^2.261.0",
+    "constructs": "^10.3.0",
+    "pg": "^8.22.0"
+  }
+}

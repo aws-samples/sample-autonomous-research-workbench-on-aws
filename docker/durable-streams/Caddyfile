@@ -1,0 +1,26 @@
+# Production durable-streams (Caddy plugin) configuration.
+#
+# Listens on a bare port (:4437) rather than a domain because the service runs
+# inside the VPC behind internal service discovery / load balancing — TLS is
+# terminated upstream, so Caddy's automatic HTTPS is disabled here.
+#
+# Reference: https://durablestreams.com/deployment
+{
+	admin off
+	auto_https off
+}
+
+:4437 {
+	route /v1/stream/* {
+		durable_streams {
+			# Persistent stream store (mounted EFS volume in ECS).
+			data_dir /data
+			# Hold long-poll connections open for up to 30s before returning empty.
+			long_poll_timeout 30s
+			# CDN/SSE cache-collapsing reconnect interval.
+			sse_reconnect_interval 60s
+			# Open file handles for the file-backed store.
+			max_file_handles 200
+		}
+	}
+}

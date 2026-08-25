@@ -1,0 +1,928 @@
+{
+  "_doc": "Drug-discovery ontology for the infon knowledge graph, using SHP2 allosteric inhibition as the worked example. actor/feature -> curated entities (kind = Actor/Feature, tokens = resolution aliases); relation -> closed predicate vocabulary. The Macro->Micro->Tag taxonomy groups entities by kind so document classification still produces graph nodes. Replace the entity and predicate sets to retarget the extractor at a different programme.",
+  "ontology": {
+    "Actors": {
+      "compound": [
+        "compound",
+        "molecule",
+        "inhibitor",
+        "drug candidate",
+        "synthesized compound",
+        "virtual compound"
+      ],
+      "shp2": [
+        "shp2",
+        "ptpn11",
+        "src homology region 2-containing protein tyrosine phosphatase 2",
+        "shp-2",
+        "protein tyrosine phosphatase shp2"
+      ],
+      "ptp1b": [
+        "ptp1b",
+        "protein tyrosine phosphatase 1b",
+        "ptpn1",
+        "selectivity counter-target"
+      ],
+      "phosphatase panel": [
+        "phosphatase panel",
+        "phosphatase selectivity panel",
+        "counter-screen panel",
+        "ptpase panel"
+      ],
+      "assay": [
+        "assay",
+        "biochemical assay",
+        "cellular assay",
+        "biophysical assay",
+        "admet assay",
+        "spr assay",
+        "thermal shift assay",
+        "caco-2",
+        "hlm",
+        "cyp inhibition",
+        "ic50 assay",
+        "ki assay",
+        "cell-based assay"
+      ],
+      "ml model": [
+        "ml model",
+        "qsar model",
+        "machine learning model",
+        "predictive model",
+        "glide",
+        "mc-mmgbsa",
+        "docking model",
+        "indazole qsar model",
+        "admet prediction model"
+      ],
+      "cell line": [
+        "cell line",
+        "ba/f3",
+        "mapk-driven cell line",
+        "tumor cell line",
+        "cancer cell line"
+      ],
+      "structural context": [
+        "structural context",
+        "binding pocket",
+        "dfg-out conformation",
+        "allosteric pocket",
+        "tunnel site",
+        "catalytic site",
+        "sh2-domain interface",
+        "protein conformation"
+      ],
+      "cancer": [
+        "cancer",
+        "oncology",
+        "tumor",
+        "noonan syndrome",
+        "leopard syndrome",
+        "nsclc",
+        "lung cancer",
+        "leukemia",
+        "solid tumor",
+        "ras-driven cancer",
+        "mapk pathway cancer",
+        "shp2-driven malignancy",
+        "indication",
+        "disease indication",
+        "therapeutic area"
+      ]
+    },
+    "Features": {
+      "chemotype": [
+        "chemotype",
+        "scaffold",
+        "chemotype class",
+        "indazole",
+        "pyrazine",
+        "aminopyridine",
+        "indazole-based core",
+        "pyrazine-linked scaffold",
+        "aminopyridine series"
+      ],
+      "tier": [
+        "tier",
+        "tier 1",
+        "tier 2",
+        "tier 3",
+        "routing tier",
+        "prioritization tier",
+        "advancement tier"
+      ],
+      "cycle": [
+        "cycle",
+        "design-make-test-analyze cycle",
+        "dmta cycle",
+        "iteration",
+        "cycle 1",
+        "cycle 2",
+        "cycle 3",
+        "campaign cycle"
+      ],
+      "ic50": [
+        "ic50",
+        "ki",
+        "pic50",
+        "pki",
+        "half-maximal inhibitory concentration",
+        "inhibitory constant",
+        "enzymatic ic50",
+        "cellular ic50",
+        "nm ic50",
+        "µm ic50",
+        "potency measurement",
+        "measured ic50",
+        "measured ki"
+      ],
+      "admet": [
+        "admet",
+        "adme",
+        "hlm t1/2",
+        "microsomal stability",
+        "metabolic stability",
+        "cyp inhibition",
+        "cyp3a4",
+        "cyp2d6",
+        "solubility",
+        "aqueous solubility",
+        "kinetic solubility",
+        "permeability",
+        "caco-2 permeability",
+        "efflux ratio",
+        "herg",
+        "plasma protein binding",
+        "ppb",
+        "toxicity flag",
+        "clearance",
+        "bioavailability"
+      ],
+      "selectivity": [
+        "selectivity",
+        "selectivity ratio",
+        "selectivity fold",
+        "selective over",
+        "counter-target selectivity",
+        "off-target activity",
+        "panel selectivity",
+        "shp2 vs ptp1b",
+        "kinase selectivity",
+        "phosphatase selectivity"
+      ],
+      "kd": [
+        "kd",
+        "spr kd",
+        "surface plasmon resonance",
+        "spr",
+        "delta tm",
+        "thermal shift",
+        "dsf",
+        "binding affinity",
+        "residence time",
+        "kon",
+        "koff",
+        "target engagement",
+        "biophysical confirmation"
+      ],
+      "sar": [
+        "sar",
+        "structure-activity relationship",
+        "sar trend",
+        "sar analysis",
+        "sar progression",
+        "substituent effect",
+        "r-group variation",
+        "matched molecular pair",
+        "mmp",
+        "sar cliff",
+        "activity cliff",
+        "key pharmacophore",
+        "critical interaction",
+        "tolerated substitution",
+        "detrimental substitution"
+      ],
+      "synthesis": [
+        "synthesis",
+        "synthetic route",
+        "synthetic scheme",
+        "reaction step",
+        "yield",
+        "synthetic accessibility",
+        "sa score",
+        "retrosynthesis",
+        "building block",
+        "coupling reaction",
+        "palladium coupling",
+        "buchwald",
+        "suzuki",
+        "reductive amination",
+        "protecting group",
+        "intermediate",
+        "final compound"
+      ],
+      "pharmacokinetics": [
+        "pharmacokinetics",
+        "pk",
+        "in vivo pk",
+        "oral bioavailability",
+        "f%",
+        "auc",
+        "cmax",
+        "t1/2",
+        "half-life",
+        "clearance",
+        "cl",
+        "volume of distribution",
+        "vd",
+        "plasma exposure",
+        "rat pk",
+        "mouse pk",
+        "iv pk",
+        "po pk",
+        "pk study",
+        "pk profile"
+      ],
+      "admet profile": [
+        "admet profile",
+        "adme profile",
+        "hlm t1/2",
+        "microsomal stability",
+        "metabolic stability",
+        "cyp inhibition",
+        "cyp3a4 inhibition",
+        "cyp2d6 inhibition",
+        "caco-2 permeability",
+        "efflux ratio",
+        "kinetic solubility",
+        "aqueous solubility",
+        "plasma protein binding",
+        "ppb",
+        "herg inhibition",
+        "clearance",
+        "in vitro clearance",
+        "toxicity flag",
+        "pampa"
+      ],
+      "molecular weight": [
+        "molecular weight",
+        "mw",
+        "clogp",
+        "logp",
+        "logd",
+        "tpsa",
+        "hbd",
+        "hba",
+        "hydrogen bond donor",
+        "hydrogen bond acceptor",
+        "rotatable bonds",
+        "lipophilicity",
+        "lipinski",
+        "ro5",
+        "rule of five",
+        "mpo score",
+        "fsp3",
+        "aromatic rings",
+        "pka"
+      ],
+      "docking score": [
+        "docking score",
+        "glide score",
+        "glide gscore",
+        "mmgbsa",
+        "mm-gbsa",
+        "mc-mmgbsa",
+        "binding pose",
+        "docked pose",
+        "virtual screening score",
+        "scoring function",
+        "free energy of binding",
+        "predicted binding energy",
+        "dock score"
+      ],
+      "allosteric": [
+        "allosteric",
+        "allosteric inhibition",
+        "allosteric site",
+        "allosteric pocket",
+        "tunnel site",
+        "closed conformation",
+        "open conformation",
+        "autoinhibited",
+        "sh2-ph interface",
+        "sh2-domain",
+        "n-sh2",
+        "c-sh2",
+        "ptp domain",
+        "interdomain interface",
+        "conformational change",
+        "allosteric mechanism"
+      ]
+    }
+  },
+  "synonyms": {},
+  "entities": [
+    {
+      "canonical_id": "compound",
+      "name": "compound",
+      "kind": "Actor",
+      "aliases": [
+        "compound",
+        "molecule",
+        "inhibitor",
+        "drug candidate",
+        "synthesized compound",
+        "virtual compound"
+      ]
+    },
+    {
+      "canonical_id": "shp2",
+      "name": "shp2",
+      "kind": "Actor",
+      "aliases": [
+        "shp2",
+        "ptpn11",
+        "src homology region 2-containing protein tyrosine phosphatase 2",
+        "shp-2",
+        "protein tyrosine phosphatase shp2"
+      ]
+    },
+    {
+      "canonical_id": "ptp1b",
+      "name": "ptp1b",
+      "kind": "Actor",
+      "aliases": [
+        "ptp1b",
+        "protein tyrosine phosphatase 1b",
+        "ptpn1",
+        "selectivity counter-target"
+      ]
+    },
+    {
+      "canonical_id": "phosphatase_panel",
+      "name": "phosphatase panel",
+      "kind": "Actor",
+      "aliases": [
+        "phosphatase panel",
+        "phosphatase selectivity panel",
+        "counter-screen panel",
+        "ptpase panel"
+      ]
+    },
+    {
+      "canonical_id": "assay",
+      "name": "assay",
+      "kind": "Actor",
+      "aliases": [
+        "assay",
+        "biochemical assay",
+        "cellular assay",
+        "biophysical assay",
+        "admet assay",
+        "spr assay",
+        "thermal shift assay",
+        "caco-2",
+        "hlm",
+        "cyp inhibition",
+        "ic50 assay",
+        "ki assay",
+        "cell-based assay"
+      ]
+    },
+    {
+      "canonical_id": "ml_model",
+      "name": "ml model",
+      "kind": "Actor",
+      "aliases": [
+        "ml model",
+        "qsar model",
+        "machine learning model",
+        "predictive model",
+        "glide",
+        "mc-mmgbsa",
+        "docking model",
+        "indazole qsar model",
+        "admet prediction model"
+      ]
+    },
+    {
+      "canonical_id": "cell_line",
+      "name": "cell line",
+      "kind": "Actor",
+      "aliases": [
+        "cell line",
+        "ba/f3",
+        "mapk-driven cell line",
+        "tumor cell line",
+        "cancer cell line"
+      ]
+    },
+    {
+      "canonical_id": "structural_context",
+      "name": "structural context",
+      "kind": "Actor",
+      "aliases": [
+        "structural context",
+        "binding pocket",
+        "dfg-out conformation",
+        "allosteric pocket",
+        "tunnel site",
+        "catalytic site",
+        "sh2-domain interface",
+        "protein conformation"
+      ]
+    },
+    {
+      "canonical_id": "chemotype",
+      "name": "chemotype",
+      "kind": "Feature",
+      "aliases": [
+        "chemotype",
+        "scaffold",
+        "chemotype class",
+        "indazole",
+        "pyrazine",
+        "aminopyridine",
+        "indazole-based core",
+        "pyrazine-linked scaffold",
+        "aminopyridine series"
+      ]
+    },
+    {
+      "canonical_id": "tier",
+      "name": "tier",
+      "kind": "Feature",
+      "aliases": [
+        "tier",
+        "tier 1",
+        "tier 2",
+        "tier 3",
+        "routing tier",
+        "prioritization tier",
+        "advancement tier"
+      ]
+    },
+    {
+      "canonical_id": "cycle",
+      "name": "cycle",
+      "kind": "Feature",
+      "aliases": [
+        "cycle",
+        "design-make-test-analyze cycle",
+        "dmta cycle",
+        "iteration",
+        "cycle 1",
+        "cycle 2",
+        "cycle 3",
+        "campaign cycle"
+      ]
+    },
+    {
+      "canonical_id": "assay_measurement",
+      "name": "ic50",
+      "kind": "Feature",
+      "aliases": [
+        "ic50",
+        "ki",
+        "pic50",
+        "kd",
+        "delta tm",
+        "spr kd",
+        "hlm t1/2",
+        "solubility",
+        "permeability",
+        "measured value",
+        "binding affinity",
+        "potency",
+        "metabolic stability",
+        "confidence score"
+      ]
+    },
+    {
+      "canonical_id": "potency_value",
+      "name": "ic50",
+      "kind": "Feature",
+      "aliases": [
+        "ic50",
+        "ki",
+        "pic50",
+        "pki",
+        "half-maximal inhibitory concentration",
+        "inhibitory constant",
+        "potency value",
+        "enzymatic potency",
+        "cellular potency",
+        "nm potency",
+        "µm potency"
+      ]
+    },
+    {
+      "canonical_id": "admet_property",
+      "name": "admet",
+      "kind": "Feature",
+      "aliases": [
+        "admet",
+        "adme",
+        "metabolic stability",
+        "hlm t1/2",
+        "microsomal stability",
+        "cyp inhibition",
+        "cyp3a4",
+        "cyp2d6",
+        "solubility",
+        "aqueous solubility",
+        "permeability",
+        "caco-2",
+        "efflux ratio",
+        "bioavailability",
+        "clearance",
+        "half-life",
+        "plasma protein binding",
+        "herg",
+        "toxicity flag"
+      ]
+    },
+    {
+      "canonical_id": "selectivity",
+      "name": "selectivity",
+      "kind": "Feature",
+      "aliases": [
+        "selectivity",
+        "selectivity ratio",
+        "selectivity fold",
+        "selective over",
+        "counter-target selectivity",
+        "off-target activity",
+        "panel selectivity",
+        "shp2 vs ptp1b",
+        "kinase selectivity",
+        "phosphatase selectivity"
+      ]
+    },
+    {
+      "canonical_id": "biophysical_measurement",
+      "name": "kd",
+      "kind": "Feature",
+      "aliases": [
+        "kd",
+        "spr kd",
+        "surface plasmon resonance",
+        "spr",
+        "delta tm",
+        "thermal shift",
+        "dsf",
+        "binding affinity",
+        "residence time",
+        "kon",
+        "koff",
+        "target engagement",
+        "biophysical confirmation"
+      ]
+    },
+    {
+      "canonical_id": "sar_finding",
+      "name": "sar",
+      "kind": "Feature",
+      "aliases": [
+        "sar",
+        "structure-activity relationship",
+        "sar trend",
+        "sar analysis",
+        "sar progression",
+        "substituent effect",
+        "r-group variation",
+        "matched molecular pair",
+        "mmp",
+        "sar cliff",
+        "activity cliff",
+        "key pharmacophore",
+        "critical interaction",
+        "tolerated substitution",
+        "detrimental substitution"
+      ]
+    },
+    {
+      "canonical_id": "synthesis_route",
+      "name": "synthesis",
+      "kind": "Feature",
+      "aliases": [
+        "synthesis",
+        "synthetic route",
+        "synthetic scheme",
+        "reaction step",
+        "yield",
+        "synthetic accessibility",
+        "sa score",
+        "retrosynthesis",
+        "building block",
+        "coupling reaction",
+        "palladium coupling",
+        "buchwald",
+        "suzuki",
+        "reductive amination",
+        "protecting group",
+        "intermediate",
+        "final compound"
+      ]
+    },
+    {
+      "canonical_id": "pk_property",
+      "name": "pharmacokinetics",
+      "kind": "Feature",
+      "aliases": [
+        "pharmacokinetics",
+        "pk",
+        "in vivo pk",
+        "oral bioavailability",
+        "f%",
+        "auc",
+        "cmax",
+        "t1/2",
+        "half-life",
+        "clearance",
+        "cl",
+        "volume of distribution",
+        "vd",
+        "plasma exposure",
+        "rat pk",
+        "mouse pk",
+        "iv pk",
+        "po pk",
+        "pk study",
+        "pk profile"
+      ]
+    },
+    {
+      "canonical_id": "disease_indication",
+      "name": "cancer",
+      "kind": "Actor",
+      "aliases": [
+        "cancer",
+        "oncology",
+        "tumor",
+        "noonan syndrome",
+        "leopard syndrome",
+        "nsclc",
+        "lung cancer",
+        "leukemia",
+        "solid tumor",
+        "ras-driven cancer",
+        "mapk pathway cancer",
+        "shp2-driven malignancy",
+        "indication",
+        "disease indication",
+        "therapeutic area"
+      ]
+    },
+    {
+      "canonical_id": "potency_measurement",
+      "name": "ic50",
+      "kind": "Feature",
+      "aliases": [
+        "ic50",
+        "ki",
+        "pic50",
+        "pki",
+        "half-maximal inhibitory concentration",
+        "inhibitory constant",
+        "enzymatic ic50",
+        "cellular ic50",
+        "nm ic50",
+        "µm ic50",
+        "potency measurement",
+        "measured ic50",
+        "measured ki"
+      ]
+    },
+    {
+      "canonical_id": "admet_measurement",
+      "name": "admet",
+      "kind": "Feature",
+      "aliases": [
+        "admet",
+        "adme",
+        "hlm t1/2",
+        "microsomal stability",
+        "metabolic stability",
+        "cyp inhibition",
+        "cyp3a4",
+        "cyp2d6",
+        "solubility",
+        "aqueous solubility",
+        "kinetic solubility",
+        "permeability",
+        "caco-2 permeability",
+        "efflux ratio",
+        "herg",
+        "plasma protein binding",
+        "ppb",
+        "toxicity flag",
+        "clearance",
+        "bioavailability"
+      ]
+    },
+    {
+      "canonical_id": "admet_profile",
+      "name": "admet profile",
+      "kind": "Feature",
+      "aliases": [
+        "admet profile",
+        "adme profile",
+        "hlm t1/2",
+        "microsomal stability",
+        "metabolic stability",
+        "cyp inhibition",
+        "cyp3a4 inhibition",
+        "cyp2d6 inhibition",
+        "caco-2 permeability",
+        "efflux ratio",
+        "kinetic solubility",
+        "aqueous solubility",
+        "plasma protein binding",
+        "ppb",
+        "herg inhibition",
+        "clearance",
+        "in vitro clearance",
+        "toxicity flag",
+        "pampa"
+      ]
+    },
+    {
+      "canonical_id": "physicochemical_property",
+      "name": "molecular weight",
+      "kind": "Feature",
+      "aliases": [
+        "molecular weight",
+        "mw",
+        "clogp",
+        "logp",
+        "logd",
+        "tpsa",
+        "hbd",
+        "hba",
+        "hydrogen bond donor",
+        "hydrogen bond acceptor",
+        "rotatable bonds",
+        "lipophilicity",
+        "lipinski",
+        "ro5",
+        "rule of five",
+        "mpo score",
+        "fsp3",
+        "aromatic rings",
+        "pka"
+      ]
+    },
+    {
+      "canonical_id": "docking_score",
+      "name": "docking score",
+      "kind": "Feature",
+      "aliases": [
+        "docking score",
+        "glide score",
+        "glide gscore",
+        "mmgbsa",
+        "mm-gbsa",
+        "mc-mmgbsa",
+        "binding pose",
+        "docked pose",
+        "virtual screening score",
+        "scoring function",
+        "free energy of binding",
+        "predicted binding energy",
+        "dock score"
+      ]
+    },
+    {
+      "canonical_id": "allosteric_mechanism",
+      "name": "allosteric",
+      "kind": "Feature",
+      "aliases": [
+        "allosteric",
+        "allosteric inhibition",
+        "allosteric site",
+        "allosteric pocket",
+        "tunnel site",
+        "closed conformation",
+        "open conformation",
+        "autoinhibited",
+        "sh2-ph interface",
+        "sh2-domain",
+        "n-sh2",
+        "c-sh2",
+        "ptp domain",
+        "interdomain interface",
+        "conformational change",
+        "allosteric mechanism"
+      ]
+    }
+  ],
+  "entities_flat": [
+    "compound",
+    "shp2",
+    "ptp1b",
+    "phosphatase panel",
+    "assay",
+    "ml model",
+    "cell line",
+    "structural context",
+    "chemotype",
+    "tier",
+    "cycle",
+    "ic50",
+    "ic50",
+    "admet",
+    "selectivity",
+    "kd",
+    "sar",
+    "synthesis",
+    "pharmacokinetics",
+    "cancer",
+    "ic50",
+    "admet",
+    "admet profile",
+    "molecular weight",
+    "docking score",
+    "allosteric"
+  ],
+  "predicates": [
+    {
+      "name": "inhibits",
+      "description": "Surface forms: inhibits, inhibit, inhibition, enzymatic inhibition, suppresses, blocks, ic50, ki.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "binds",
+      "description": "Surface forms: binds, bind, binds to, binding, spr binding, kd binding, engages, target engagement.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "promotes",
+      "description": "Surface forms: promotes, activates, upregulates, enhances, stimulates.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "reduces",
+      "description": "Surface forms: reduces, decrease, lowers, attenuates, deprioritizes, rejects, rejected.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "treats",
+      "description": "Surface forms: treats, treatment, therapeutic use, advanced to in-vivo, approved for in-vivo, in-vivo pk study.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "tested_in",
+      "description": "Surface forms: tested in, profiled in, measured in, assayed in, evaluated in, run in, screened in.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "predicted_by",
+      "description": "Surface forms: predicted by, predicted using, modeled by, scored by, docked with, forecast by, estimated by.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "belongs_to_chemotype",
+      "description": "Surface forms: belongs to chemotype, classified as, scaffold class, chemotype membership, series membership, belongs to series.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Feature"]
+    },
+    {
+      "name": "routed_to_tier",
+      "description": "Surface forms: routed to tier, assigned to tier, advanced to tier, routing decision, approved for synthesis, returned for optimization, deprioritized.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Feature"]
+    },
+    {
+      "name": "supersedes",
+      "description": "Surface forms: supersedes, replaces, sar progression from, evolved from, next generation of, improves upon.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    },
+    {
+      "name": "has_structural_context",
+      "description": "Surface forms: has structural context, adopts conformation, binding site, docked against, structural binding mode, pocket context.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor", "Feature"]
+    },
+    {
+      "name": "series_membership",
+      "description": "Surface forms: belongs to series, classified as, scaffold class, chemotype membership, series membership, belongs to chemotype, member of, part of series, indazole series, pyrazine series, aminopyridine series.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Feature"]
+    },
+    {
+      "name": "target_engagement",
+      "description": "Surface forms: binds, bind, binds to, binding, spr binding, kd binding, engages, target engagement, occupies, interacts with, forms complex with.",
+      "domain_kinds": ["Actor"],
+      "range_kinds": ["Actor"]
+    }
+  ]
+}

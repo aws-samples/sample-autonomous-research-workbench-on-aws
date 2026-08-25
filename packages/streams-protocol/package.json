@@ -1,0 +1,23 @@
+{
+  "name": "@repo/streams-protocol",
+  "version": "1.0.0",
+  "description": "Typed Electric Streams event contract shared by the agent worker (producer) and web app (consumer).",
+  "type": "module",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.9.3"
+  }
+}
