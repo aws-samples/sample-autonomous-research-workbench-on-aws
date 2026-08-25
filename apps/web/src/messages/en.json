@@ -1,0 +1,771 @@
+{
+  "HomePage": {
+    "title": "Project ready!",
+    "description": "You may now add components and start building.",
+    "buttonAdded": "We've already added the button component for you.",
+    "button": "Button",
+    "darkModeHint": "(Press {key} to toggle dark mode)"
+  },
+  "SignIn": {
+    "logoAlt": "Research Platform",
+    "platform": "Research Platform",
+    "signIn": "Sign In",
+    "signingIn": "Signing in..."
+  },
+  "AppShell": {
+    "logoAlt": "Logo",
+    "wordmark": "Research Platform",
+    "teamName": "Discovery Research",
+    "createNewTeam": "Create new team",
+    "search": "Search",
+    "projects": "Projects",
+    "noProjects": "No projects yet",
+    "draft": "Draft",
+    "tasks": "Recent Tasks",
+    "active": "Active",
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
+    "delete": "Delete",
+    "noTasks": "No tasks yet",
+    "nav": {
+      "projects": "Projects",
+      "tasks": "Tasks",
+      "graphExplorer": "Platform Graph",
+      "artifacts": "Artifacts",
+      "settings": "Settings",
+      "agents": "Agents",
+      "tools": "Tools",
+      "previewBadge": "Preview"
+    },
+    "user": {
+      "preferences": "Preferences",
+      "resources": "Resources",
+      "apiDocs": "API documentation",
+      "signOut": "Sign out"
+    },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "metrics": {
+      "hypotheses": {
+        "label": "Active Hypotheses",
+        "delta": "+{count} this week"
+      },
+      "graph": {
+        "label": "Knowledge Graph",
+        "delta": "entities · relationships"
+      },
+      "tasks": {
+        "label": "Active Research",
+        "delta": "running now"
+      },
+      "sources": {
+        "label": "Connected Sources",
+        "delta": "live feeds"
+      }
+    },
+    "greeting": {
+      "morning": "Good morning, {name}. What would you like to explore today?",
+      "afternoon": "Good afternoon, {name}. What would you like to explore?",
+      "evening": "Good evening, {name}. What would you like to explore?",
+      "night": "Good evening, {name}. What would you like to explore?"
+    },
+    "placeholder": "Ask about a target, scaffold, or assay; benchmark a series, or run an analysis...",
+    "send": "Send",
+    "modes": {
+      "project": "Project"
+    },
+    "categories": {
+      "targetBiology": "Target Biology",
+      "hitDiscovery": "Hit Discovery",
+      "medChem": "Medicinal Chemistry",
+      "dmpkSafety": "DMPK & Safety",
+      "cmc": "CMC & Process"
+    },
+    "suggestions": {
+      "targetBiology": [
+        "Summarize the genetic evidence linking a kinase target to disease",
+        "Map isoform expression across relevant tissues",
+        "Compare apo and holo structures for conformational changes",
+        "Identify paralogs that could drive off-target activity"
+      ],
+      "hitDiscovery": [
+        "Design a triage cascade for a high-throughput screen output",
+        "Cluster a hit list by scaffold and rank by ligand efficiency",
+        "Plan orthogonal confirmation for a set of primary hits",
+        "Enumerate a focused virtual library around a fragment hit"
+      ],
+      "medChem": [
+        "Propose substitutions to improve potency in a lipophilic pocket",
+        "Suggest bioisosteres for a metabolically labile amide",
+        "Rank scaffold hops that preserve the key hinge interaction",
+        "Explore ways to raise sp3 character without losing affinity"
+      ],
+      "dmpkSafety": [
+        "Predict microsomal stability and human clearance for a series",
+        "Flag hERG and CYP inhibition risk across analogs",
+        "Compare permeability and efflux liabilities in a matched pair",
+        "Estimate oral bioavailability from in vitro inputs"
+      ],
+      "cmc": [
+        "Outline a scale-up route for a candidate molecule",
+        "Plan a salt and polymorph screen",
+        "Draft an impurity control strategy for a key step",
+        "Recommend formulation options for early tox studies"
+      ]
+    }
+  },
+  "Artifacts": {
+    "title": "Artifacts",
+    "tagline": "Browse and manage all files in the platform artifacts bucket."
+  },
+  "Settings": {
+    "title": "Settings",
+    "tagline": "Manage platform members and knowledge documents",
+    "tabs": {
+      "users": "User Management",
+      "schema": "Ontology",
+      "knowledge": "Knowledge",
+      "email": "Email"
+    },
+    "users": {
+      "searchPlaceholder": "Search by name or email…",
+      "empty": "No users match your filters.",
+      "loading": "Loading users…",
+      "error": "Couldn't load users.",
+      "restricted": "Admins only",
+      "restrictedHint": "Only administrators can view and manage platform users.",
+      "rowCount": "{count} users",
+      "page": "Page {page} of {total}",
+      "admin": "Admin",
+      "toggleAria": "Toggle admin access for {name}",
+      "filters": {
+        "reset": "Reset",
+        "view": "View",
+        "toggleColumns": "Toggle columns"
+      },
+      "columns": {
+        "user": "User",
+        "accessLevel": "Access",
+        "joined": "Joined",
+        "admin": "Admin"
+      },
+      "accessLevels": {
+        "Member": "Member",
+        "Admin": "Admin"
+      },
+      "confirm": {
+        "promoteTitle": "Grant admin access?",
+        "promoteDescription": "{name} will be able to manage all members and ontologies on the platform.",
+        "promoteConfirm": "Make admin",
+        "demoteTitle": "Revoke admin access?",
+        "demoteDescription": "{name} will lose access to platform management.",
+        "demoteConfirm": "Revoke",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "promoted": "{name} is now an admin",
+        "demoted": "{name} is now a member"
+      }
+    }
+  },
+  "GraphExplorer": {
+    "title": "Platform Graph",
+    "tagline": "Explore hypotheses, observations, and evidence across the platform",
+    "nodeCount": "{count, plural, one {# node} other {# nodes}}",
+    "showFullGraph": "Show full graph",
+    "toolbar": {
+      "labels": "Toggle labels",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "reset": "Reset view",
+      "showPanel": "Show details",
+      "hidePanel": "Hide details",
+      "ariaLabel": "Epistemic graph"
+    },
+    "legend": {
+      "hypothesis": "Hypothesis",
+      "observation": "Observation",
+      "evidence": "Evidence",
+      "paper": "PubMed paper",
+      "simulation": "Simulation",
+      "target": "Reactome target",
+      "agent": "Agent",
+      "entity": "Entity"
+    },
+    "status": {
+      "proposed": "Proposed",
+      "supported": "Supported",
+      "refuted": "Refuted"
+    },
+    "confidence": {
+      "label": "Confidence",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "detail": {
+      "empty": "Select a node to see its reasoning and evidence",
+      "focus": "Focus on this node",
+      "proposedBy": "Proposed by",
+      "reasoning": "Reasoning",
+      "summary": "Summary",
+      "supporting": "Supporting evidence",
+      "refuting": "Refuting evidence",
+      "connections": "Connections",
+      "noConnections": "No connections",
+      "metadata": "Metadata",
+      "pmid": "PMID",
+      "doi": "DOI",
+      "jobId": "SLURM job",
+      "reactomeId": "Reactome ID",
+      "viewSource": "View source"
+    }
+  },
+  "Tasks": {
+    "metrics": {
+      "cacheRead": "Cache read",
+      "cacheWrite": "Cache write",
+      "input": "Input",
+      "output": "Output",
+      "total": "Total",
+      "cost": "Cost"
+    }
+  },
+  "Projects": {
+    "title": "Projects",
+    "tagline": "Multi-agent discovery programs orchestrated by a Project Lead",
+    "empty": "No projects found.",
+    "back": "Projects",
+    "agentCount": "{count, plural, one {# agent} other {# agents}}",
+    "searchPlaceholder": "Search projects...",
+    "create": "Create",
+    "rowCount": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+    "page": "Page {page} of {total}",
+    "columns": {
+      "name": "Project",
+      "status": "Status",
+      "agents": "Agents",
+      "created": "Created"
+    },
+    "filters": {
+      "reset": "Reset",
+      "view": "View",
+      "toggleColumns": "Toggle columns"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed"
+    },
+    "delete": "Delete",
+    "deleteConfirm": {
+      "title": "Delete project?",
+      "description": "{name} and its agent assignments will be permanently deleted. This can't be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toasts": {
+      "deleted": "Project deleted"
+    },
+    "projectLead": "Project Lead",
+    "leadIntro": "I'm the Team Lead for this project. Ask me what the agents are working on, or tell me to start or stop them.",
+    "leadThinking": "Team Lead is working…",
+    "messageActions": {
+      "copy": "Copy response",
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy to clipboard",
+      "rerun": "Re-run"
+    },
+    "composer": {
+      "placeholder": "Message the Project Lead…",
+      "send": "Send"
+    },
+    "workspace": {
+      "agents": "Agents",
+      "files": "Files",
+      "projectGraph": "Graph",
+      "viewPlatformGraph": "Open Platform Graph",
+      "metrics": "Metrics",
+      "settings": "Settings"
+    },
+    "files": {
+      "root": "Files",
+      "loadError": "Failed to load files",
+      "emptyDirectory": "This folder is empty",
+      "emptyDirectoryHint": "Drag and drop files here, or use File > Upload File to add some.",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "size": "Size",
+        "modified": "Modified"
+      },
+      "types": {
+        "folder": "Folder",
+        "file": "File"
+      },
+      "fileViewer": {
+        "back": "Back",
+        "loadError": "Failed to load file"
+      },
+      "menu": {
+        "file": "File",
+        "newFolder": "New Folder",
+        "uploadFile": "Upload File",
+        "edit": "Edit",
+        "undo": "Undo",
+        "redo": "Redo",
+        "find": "Find",
+        "searchTheWeb": "Search the web",
+        "findEllipsis": "Find...",
+        "findNext": "Find Next",
+        "findPrevious": "Find Previous",
+        "cut": "Cut",
+        "copy": "Copy",
+        "paste": "Paste",
+        "view": "View",
+        "refresh": "Refresh",
+        "showHiddenFiles": "Show Hidden Files",
+        "newFolderDescription": "Enter a name for the new folder.",
+        "folderNamePlaceholder": "Folder name",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating...",
+        "deleteFile": "Delete",
+        "deleteFileTitle": "Delete File",
+        "deleteFolderTitle": "Delete Folder",
+        "deleteFileDescription": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+        "deleteFolderDescription": "Are you sure you want to delete the folder \"{name}\" and all its contents? This action cannot be undone.",
+        "deleting": "Deleting...",
+        "downloadFile": "Download",
+        "downloading": "Downloading...",
+        "uploadDialogTitle": "Upload Files",
+        "uploadDialogDescription": "Select files or drag and drop them here to upload to the current directory.",
+        "dropzoneText": "Drag and drop files here, or",
+        "browseFiles": "browse files",
+        "selectedFiles": "{count, plural, =1 {# file} other {# files}} selected",
+        "upload": "Upload",
+        "uploading": "Uploading...",
+        "uploadError": "Failed to upload files",
+        "dropToUpload": "Drop files to upload"
+      }
+    },
+    "budgetAlert": {
+      "title": "Budget exceeded — agents have been stopped",
+      "description": "This project has reached its spend cap. Raise or remove the budget to restart agents.",
+      "action": "Review budget"
+    },
+    "metrics": {
+      "sampleUnavailable": "Metrics are only available for live projects.",
+      "empty": "No runs yet. Metrics appear once agents start working.",
+      "totalSpend": "Total spend",
+      "ofBudget": "of ${budget} budget",
+      "totalTokens": "Total tokens",
+      "tokenSplit": "{input} in · {output} out · {cached} cached",
+      "runs": "Runs",
+      "runsBreakdown": "{succeeded} succeeded · {failed} failed · {active} active",
+      "charts": {
+        "spendTitle": "Daily spend",
+        "spendDescription": "Cost per day over the last 30 days.",
+        "spend": "Spend",
+        "tokensTitle": "Daily token usage",
+        "tokensDescription": "Input, output, and cache-read tokens per day.",
+        "inputTokens": "Input",
+        "outputTokens": "Output",
+        "cacheReadTokens": "Cache read",
+        "byAgentTitle": "Spend by agent",
+        "byAgentDescription": "Where the budget is going across the roster.",
+        "byAgentRow": "${cost} · {runs, plural, one {# run} other {# runs}}"
+      }
+    },
+    "settings": {
+      "save": "Save",
+      "sampleReadOnly": "Sample projects are read-only. Create a project to configure it.",
+      "menu": {
+        "general": "General",
+        "leadModel": "Project Lead",
+        "heartbeat": "Heartbeat",
+        "budget": "Budget",
+        "agents": "Agents"
+      },
+      "general": {
+        "title": "General",
+        "description": "The project's name and research description.",
+        "name": "Name",
+        "namePlaceholder": "e.g. TX-200 allosteric program",
+        "nameRequired": "A project name is required",
+        "nameTooLong": "Keep the name under 64 characters",
+        "projectDescription": "Description",
+        "projectDescriptionHint": "The seed hypothesis that briefs the Project Lead and its agents.",
+        "descriptionPlaceholder": "Describe the research program…",
+        "descriptionRequired": "A description is required",
+        "descriptionTooLong": "Keep the description under 2000 characters"
+      },
+      "leadModel": {
+        "title": "Project Lead model",
+        "description": "The model powering the Project Lead's reasoning and coordination.",
+        "preferredModel": "Preferred model",
+        "preferredModelDescription": "Applied to the Project Lead's next turn."
+      },
+      "leadPrompt": {
+        "title": "Project Lead system prompt",
+        "description": "Override the default instructions that brief the Project Lead.",
+        "label": "Custom system prompt",
+        "hint": "Replaces the built-in Project Lead prompt entirely. Leave empty to use the platform default. Applied to the Project Lead's next turn.",
+        "placeholder": "You are the Team Lead for this research project…",
+        "tooLong": "Please use 10,000 characters at maximum."
+      },
+      "heartbeat": {
+        "title": "Heartbeat",
+        "description": "A daily scheduled pulse that asks the Project Lead to check on its agents and decide whether new knowledge warrants further research. The Project Lead may stop the heartbeat when it judges the project has reached a conclusion; you can re-enable it here.",
+        "enabledLabel": "Daily pulse",
+        "enabledHint": "The Project Lead is pulsed once a day.",
+        "disabledHint": "The heartbeat is stopped — the Project Lead concluded the project or it was turned off.",
+        "timeLabel": "Time of day",
+        "timeHint": "When the daily pulse fires ({timezone}).",
+        "timezoneMismatch": "Your current timezone is {timezone}.",
+        "useMyTimezone": "Use my timezone",
+        "noneActive": "This project has no heartbeat schedule yet.",
+        "noneDraft": "The heartbeat is created when research is activated.",
+        "enable": "Enable heartbeat",
+        "toastSaved": "Heartbeat updated"
+      },
+      "budget": {
+        "title": "Project budget",
+        "description": "A hard spend cap for this project's agents. When total spend crosses the cap, all working agents are stopped automatically.",
+        "limitLabel": "Enforce a spend limit",
+        "limitHint": "Agents auto-stop when the project reaches this amount.",
+        "currentSpend": "Current spend",
+        "spendOfBudget": "${spend} of ${budget}",
+        "toastSaved": "Project budget updated"
+      },
+      "agents": {
+        "title": "Assigned agents",
+        "description": "The specialist agents working on this program.",
+        "searchPlaceholder": "Search agents…",
+        "noResults": "No agents match \"{query}\".",
+        "selectedCount": "{count, plural, one {# agent selected} other {# agents selected}}"
+      },
+      "toast": {
+        "generalSaved": "Project details saved",
+        "modelSaved": "Project Lead model updated",
+        "promptSaved": "Project Lead system prompt updated",
+        "agentsSaved": "Assigned agents updated",
+        "error": "Something went wrong. Please try again."
+      }
+    },
+    "agentStates": {
+      "active": "Active",
+      "idle": "Idle",
+      "blocked": "Blocked"
+    },
+    "agent": {
+      "back": "Back to project",
+      "currentlyWorking": "Currently working on",
+      "noCurrent": "Idle",
+      "working": "Working on the seed hypothesis…",
+      "run": "Run",
+      "stop": "Stop",
+      "lastResult": {
+        "succeeded": "Done",
+        "failed": "Failed",
+        "cancelled": "Stopped"
+      },
+      "sections": {
+        "active": "Active",
+        "current": "Current tasks",
+        "pending": "Pending tasks"
+      },
+      "empty": "Nothing here yet",
+      "activity": {
+        "title": "Activity",
+        "streaming": "Working…",
+        "waitingOnSubagents": "Waiting on sub-agents…",
+        "blocked": "Blocked",
+        "starting": "Starting up — output will appear here shortly.",
+        "empty": "No runs yet. Press Run to put this agent to work.",
+        "noTranscript": "No transcript is available for this run.",
+        "subagents": {
+          "title": "Sub-agents"
+        },
+        "runs": {
+          "label": "Run history",
+          "latest": "Latest"
+        }
+      }
+    }
+  },
+  "Agents": {
+    "title": "Agents",
+    "tagline": "Create and manage the agents that run on the platform.",
+    "platform": "Platform",
+    "name": "Name",
+    "description": "Description",
+    "model": "Model",
+    "tools": "Tools",
+    "updated": "Updated",
+    "updatedAgo": "Updated {time}",
+    "searchPlaceholder": "Search agents...",
+    "noAgents": "No agents yet",
+    "noAgentsDescription": "Create your first agent to configure a model, prompt, and tools tailored to your research.",
+    "noResults": "No results found",
+    "noResultsHint": "Try a different search term",
+    "refreshed": "Agents refreshed",
+    "createAgent": "Create agent",
+    "createAgentDescription": "Give your agent a name and a short description of what it does.",
+    "namePlaceholder": "e.g. Literature Scout",
+    "descriptionPlaceholder": "What does this agent help with?",
+    "create": "Create",
+    "creating": "Creating...",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteAgent": "Delete agent",
+    "deleteAgentDescription": "Are you sure you want to delete “{agentName}”? This action cannot be undone.",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating...",
+    "duplicateAgent": "Duplicate agent",
+    "duplicateAgentDescription": "Create a copy of this agent with the same configuration.",
+    "duplicateSuccess": "Agent duplicated",
+    "duplicateError": "Failed to duplicate agent",
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "notFound": {
+      "title": "Agent not found",
+      "description": "This agent may have been deleted or you don't have access to it.",
+      "backToAgents": "Back to agents"
+    },
+    "toast": {
+      "error": "Something went wrong. Please try again.",
+      "identitySuccess": "Agent details saved",
+      "modelSuccess": "Preferred model saved",
+      "configSuccess": "Model configuration saved",
+      "historySuccess": "History settings saved",
+      "promptSuccess": "System prompt saved",
+      "orbColorSuccess": "Avatar colors saved",
+      "toolAddSuccess": "Tools added",
+      "toolRemoveSuccess": "Tool removed"
+    },
+    "settings": {
+      "subtitle": "Configure this agent's identity, model, prompt and tools",
+      "menu": {
+        "general": "General",
+        "model": "Model",
+        "prompt": "Prompt",
+        "tools": "Tools",
+        "skills": "Skills"
+      },
+      "identity": {
+        "title": "Identity",
+        "description": "The name and description shown wherever this agent appears.",
+        "name": "Name",
+        "namePlaceholder": "e.g. Literature Scout",
+        "nameRequired": "Name is required.",
+        "nameTooLong": "Please use 64 characters at maximum.",
+        "agentDescription": "Description",
+        "descriptionPlaceholder": "What does this agent help with?",
+        "descriptionRequired": "Description is required.",
+        "descriptionTooLong": "Please use 500 characters at maximum."
+      },
+      "orbColor": {
+        "title": "Avatar",
+        "description": "Customize the colors of this agent's avatar orb.",
+        "firstColor": "First color",
+        "secondColor": "Second color"
+      },
+      "deleteAgent": {
+        "title": "Danger zone",
+        "description": "Permanently delete this agent and its configuration.",
+        "button": "Delete agent"
+      },
+      "modelSection": {
+        "title": "Model",
+        "description": "Choose which model powers this agent.",
+        "preferredModel": "Preferred model",
+        "preferredModelDescription": "The model used for this agent's runs.",
+        "reasoningConfigurable": "Configurable budget",
+        "reasoningAdaptive": "Adaptive",
+        "reasoningDisabled": "Disabled",
+        "detailContext": "Context",
+        "detailReasoning": "Reasoning",
+        "detailCost": "Cost (in/out per 1M)"
+      },
+      "configSection": {
+        "title": "Generation",
+        "description": "Token limits and reasoning behavior for this agent.",
+        "maxTokens": "Max output tokens",
+        "maxTokensDescription": "Up to {limit} for the selected model.",
+        "enableReasoning": "Extended reasoning",
+        "enableReasoningDescription": "Let the model think before responding.",
+        "budgetAllocation": "Budget allocation",
+        "budgetOutput": "Output",
+        "budgetReasoning": "Reasoning",
+        "reasoningBudget": "Reasoning budget",
+        "reasoningBudgetDescription": "Maximum tokens the model can spend thinking.",
+        "effortLevel": "Effort level",
+        "effortLevelDescription": "How much thinking the model applies to each request.",
+        "effortLow": "Low effort",
+        "effortMax": "Max effort",
+        "efforts": {
+          "low": {
+            "label": "Low",
+            "desc": "Minimal thinking, prioritizes speed"
+          },
+          "medium": {
+            "label": "Medium",
+            "desc": "Moderate thinking, may skip for simple queries"
+          },
+          "high": {
+            "label": "High",
+            "desc": "Deep reasoning on complex tasks"
+          },
+          "max": {
+            "label": "Max",
+            "desc": "No constraints on thinking depth"
+          }
+        }
+      },
+      "historySection": {
+        "title": "Conversation history",
+        "description": "How much prior conversation the agent sees on each run.",
+        "strategy": "Strategy",
+        "strategyDescription": "How history is assembled for the model.",
+        "strategies": {
+          "none": {
+            "label": "None",
+            "description": "Each run starts fresh with no prior messages."
+          },
+          "slidingWindow": {
+            "label": "Sliding window",
+            "description": "Include the most recent messages up to the window size."
+          }
+        },
+        "windowSize": "Window size",
+        "windowSizeDescription": "Number of recent messages to include (1-200).",
+        "perTurn": "Re-apply per turn",
+        "perTurnDescription": "Recompute the window on every turn instead of once per run."
+      },
+      "promptSection": {
+        "title": "System prompt",
+        "description": "Instructions prepended to every run of this agent.",
+        "customInstructions": "Custom instructions",
+        "customInstructionsDescription": "Describe the agent's role, tone, and constraints.",
+        "placeholder": "You are a helpful research assistant...",
+        "tooLong": "Please use 10,000 characters at maximum."
+      },
+      "toolsSection": {
+        "title": "Tools",
+        "description": "The tool groups this agent can call during a run.",
+        "searchPlaceholder": "Search tools...",
+        "addTool": "Add tools",
+        "removeTool": "Remove",
+        "core": "Core",
+        "table": {
+          "name": "Name",
+          "description": "Description",
+          "toolCount": "Tools"
+        },
+        "toolCount": "{count, plural, one {# tool} other {# tools}}",
+        "addToolsCount": "{count, plural, =0 {Add tools} one {Add # tool} other {Add # tools}}",
+        "noToolsFound": "No tools match your search",
+        "emptyState": "No tools enabled. Add tools to give this agent capabilities."
+      },
+      "skillsSection": {
+        "title": "Skills",
+        "description": "Upload skill folders that teach this agent new capabilities. Each skill is a folder with a SKILL.md at its root plus any supporting files.",
+        "uploadTitle": "Upload a skill folder",
+        "uploadHint": "Select a folder containing a SKILL.md. Max 2 MB per skill.",
+        "uploadButton": "Upload skill",
+        "uploadSuccess": "Skill uploaded",
+        "deleteSuccess": "Skill deleted",
+        "missingSkillMd": "The folder must contain a SKILL.md file at its root.",
+        "tooLarge": "Skill exceeds the size limit (512 KB per file, 2 MB total).",
+        "fileCount": "{count, plural, one {# file} other {# files}}",
+        "emptyTitle": "No skills yet",
+        "emptyDescription": "Upload a skill folder to extend what this agent can do."
+      }
+    },
+    "pagination": {
+      "rows": "Rows",
+      "of": "of"
+    }
+  },
+  "Tools": {
+    "title": "Tools",
+    "tagline": "Connect MCP servers to give every agent on the platform new capabilities.",
+    "preview": {
+      "badge": "Preview",
+      "title": "Preview — this page is a mock-up",
+      "description": "Connecting MCP servers is not implemented yet. Everything below is sample data: no server is contacted, nothing is saved, and any changes are discarded when you reload."
+    },
+    "searchPlaceholder": "Search servers and tools...",
+    "summary": "{servers} connected · {tools} tools available",
+    "toolCount": "{count, plural, one {# tool} other {# tools}}",
+    "agentCount": "{count, plural, =0 {No agents} one {# agent} other {# agents}}",
+    "syncedAgo": "Synced {time}",
+    "justNow": "just now",
+    "enableServer": "Enable server",
+    "cancel": "Cancel",
+    "noServers": "No MCP servers connected",
+    "noServersDescription": "Add an MCP server to expose its tools to the agents running on this platform.",
+    "noResults": "No results found",
+    "noResultsHint": "Try a different search term",
+    "customServerFallbackDesc": "Custom MCP server.",
+    "status": {
+      "connected": "Connected",
+      "disabled": "Disabled",
+      "error": "Connection failed"
+    },
+    "actions": {
+      "sync": "Sync tools",
+      "configure": "Configure",
+      "remove": "Remove server"
+    },
+    "addServer": "Add MCP server",
+    "addServerDescription": "Any MCP-compatible server can be registered here. Pick one from the registry or point the platform at your own endpoint.",
+    "addServerPreviewNote": "Preview only — no connection is made and the server is not saved.",
+    "addServerConfirm": "{count, plural, =0 {Add server} one {Add server with # tool} other {Add server with # tools}}",
+    "testConnection": "Test connection",
+    "connecting": "Connecting...",
+    "discoveredTitle": "{count, plural, one {Handshake succeeded — # tool discovered} other {Handshake succeeded — # tools discovered}}",
+    "registrySearchPlaceholder": "Search the MCP registry...",
+    "registryEmpty": "Every registry server is already connected.",
+    "tabs": {
+      "registry": "Registry",
+      "custom": "Custom server"
+    },
+    "form": {
+      "name": "Display name",
+      "namePlaceholder": "e.g. Assay Data Warehouse",
+      "transport": "Transport",
+      "endpoint": "Endpoint URL",
+      "endpointPlaceholder": "https://mcp.example.com/mcp",
+      "endpointHint": "The platform connects from its VPC, so internal endpoints work too.",
+      "command": "Launch command",
+      "commandPlaceholder": "npx -y @scope/my-mcp-server",
+      "commandHint": "Runs in the platform's sandboxed tool container.",
+      "auth": "Authentication",
+      "token": "Bearer token",
+      "tokenPlaceholder": "Stored in Secrets Manager",
+      "description": "Description",
+      "descriptionPlaceholder": "What does this server give agents access to?",
+      "headers": "Extra headers",
+      "headersPlaceholder": "X-Tenant-Id: acme-research",
+      "headersHint": "One header per line, sent with every request."
+    },
+    "toast": {
+      "added": "{name} connected",
+      "removed": "{name} removed",
+      "synced": "{name} tools synced",
+      "enabled": "Server enabled",
+      "disabled": "Server disabled"
+    }
+  }
+}

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Per-Project Runtimes &amp; the Chain of Command — Animated Walkthrough</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2330;
+    --border: #2d3646;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+
+  header {
+    padding: 64px 24px 40px; text-align: center;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(88,166,255,.16), transparent),
+      radial-gradient(ellipse 40% 60% at 80% 0%, rgba(57,197,207,.10), transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  header p.sub { color: var(--muted); margin-top: 10px; max-width: 780px; margin-left: auto; margin-right: auto; }
+  .keyline {
+    display: inline-block; margin-top: 22px; padding: 10px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--accent); font-weight: 600;
+  }
+  nav.crumbs { padding: 14px 24px; font-size: .82rem; color: var(--muted); }
+  nav.crumbs a { color: var(--accent); text-decoration: none; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 24px 120px; }
+  section { margin-top: 72px; }
+  section > h2 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  section > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+    background: rgba(88,166,255,.15); color: var(--accent); font-size: .9rem;
+  }
+  section > p.lead { color: var(--muted); margin-top: 8px; max-width: 860px; }
+  .panel { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+
+  .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .72rem;
+    color: var(--cyan); cursor: pointer; transition: border-color .2s;
+  }
+  .file-chip:hover { border-color: var(--cyan); }
+  .file-chip::before { content: "📄"; font-size: .8rem; }
+  .file-chip.copied { border-color: var(--green); color: var(--green); }
+  .file-chip.copied::after { content: " copied"; color: var(--green); font-size: .68rem; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    border: 1px solid transparent; white-space: nowrap; transition: all .4s;
+  }
+  .badge.creating  { background: rgba(210,153,34,.14); color: var(--yellow); border-color: rgba(210,153,34,.4); }
+  .badge.ready     { background: rgba(63,185,80,.14); color: var(--green); border-color: rgba(63,185,80,.4); }
+  .badge.null      { background: transparent; color: #4a5568; border-color: rgba(74,85,104,.5); }
+  .badge.running   { background: rgba(88,166,255,.14); color: var(--accent); border-color: rgba(88,166,255,.4); }
+  .badge.waiting   { background: rgba(210,153,34,.14); color: var(--yellow); border-color: rgba(210,153,34,.4); }
+  .badge.succeeded { background: rgba(63,185,80,.14); color: var(--green); border-color: rgba(63,185,80,.4); }
+  .badge.pending   { background: rgba(139,152,169,.14); color: var(--muted); border-color: rgba(139,152,169,.35); }
+
+  .walk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .walk-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .tbl { color: var(--cyan); font-family: "SF Mono", ui-monospace, Menlo, monospace; text-transform: none; letter-spacing: 0; font-size: .74rem; }
+
+  table.state { width: 100%; border-collapse: collapse; font-size: .8rem; }
+  table.state th {
+    text-align: left; color: var(--muted); font-weight: 600; font-size: .7rem;
+    text-transform: uppercase; letter-spacing: .06em;
+    padding: 6px 8px; border-bottom: 1px solid var(--border);
+  }
+  table.state td { padding: 7px 8px; border-bottom: 1px solid rgba(45,54,70,.5); }
+  table.state tr.flash td { animation: rowflash 1.1s ease; }
+  @keyframes rowflash { 0% { background: rgba(88,166,255,.18); } 100% { background: transparent; } }
+  @keyframes rowappear { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* provisioning pipeline */
+  .prov-steps { display: flex; flex-direction: column; gap: 0; }
+  .pstep { display: flex; align-items: flex-start; gap: 14px; padding: 10px 0; opacity: .3; transition: opacity .4s; }
+  .pstep.on { opacity: 1; }
+  .pstep .pdot {
+    width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; font-size: .74rem; font-weight: 700;
+    background: var(--panel2); border: 1.5px solid var(--border); transition: all .4s;
+  }
+  .pstep.on .pdot { border-color: var(--accent); color: var(--accent); }
+  .pstep.on.pass .pdot { border-color: var(--green); color: var(--green); background: rgba(63,185,80,.1); }
+  .pstep .pbody b { font-size: .84rem; }
+  .pstep .pbody p { color: var(--muted); font-size: .74rem; margin-top: 2px; }
+  .pstep .pbody p code { background: rgba(88,166,255,.12); padding: 0 5px; border-radius: 4px; font-size: .88em; }
+
+  /* runtime diagram */
+  .rt-diagram { position: relative; }
+  .rt-box {
+    border: 1.5px solid var(--border); border-radius: 14px; padding: 14px;
+    background: var(--panel2); transition: border-color .5s, opacity .5s;
+  }
+  .rt-box.lit { border-color: var(--accent); }
+  .rt-box .rt-title { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .78rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .rt-box .rt-sub { color: var(--muted); font-size: .68rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; margin-top: 2px; }
+  .rt-sessions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 46px; }
+  .rt-sess {
+    padding: 6px 10px; border-radius: 9px; background: var(--bg); border: 1.5px solid var(--border);
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .66rem;
+    animation: rowappear .5s ease; transition: opacity .5s, border-color .4s;
+  }
+  .rt-sess .who { font-weight: 700; font-size: .72rem; }
+  .rt-sess .st { display: block; margin-top: 1px; }
+  .rt-sess.busy { border-color: var(--accent); box-shadow: 0 0 0 0 rgba(88,166,255,.35); animation: rowappear .5s ease, sesspulse 1.6s infinite; }
+  .rt-sess.busy .st { color: var(--accent); }
+  .rt-sess.settled { opacity: .5; }
+  .rt-sess.settled .st { color: var(--muted); }
+  @keyframes sesspulse { 0% { box-shadow: 0 0 0 0 rgba(88,166,255,.3); } 70% { box-shadow: 0 0 0 7px rgba(88,166,255,0); } 100% { box-shadow: 0 0 0 0 rgba(88,166,255,0); } }
+  .rt-mount {
+    margin-top: 10px; padding: 8px 10px; border-radius: 9px;
+    border: 1.5px dashed rgba(57,197,207,.5); background: rgba(57,197,207,.05);
+    font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .68rem; color: var(--cyan);
+    transition: border-color .4s;
+  }
+  .rt-mount.hot { border-color: var(--cyan); animation: rowflash 1.1s ease; }
+
+  /* S3 files panel */
+  .s3-tree { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .74rem; line-height: 1.9; min-height: 120px; }
+  .s3-tree .dir { color: var(--accent); }
+  .s3-tree .fil { color: var(--text); animation: rowappear .5s ease; }
+  .s3-tree .fil.new { color: var(--green); }
+  .s3-tree .fil .by { color: var(--muted); font-size: .64rem; }
+  .s3-tree .empty { color: #4a5568; }
+
+  .caption {
+    margin-top: 18px; padding: 18px 20px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(88,166,255,.08), rgba(88,166,255,.03));
+    border: 1px solid rgba(88,166,255,.25); min-height: 96px;
+  }
+  .caption .stage { color: var(--accent); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+  .caption p { margin-top: 6px; font-size: .95rem; }
+  .caption p code { background: rgba(88,166,255,.12); padding: 1px 6px; border-radius: 5px; font-size: .85em; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  button.ctl {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 22px; font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  button.ctl:hover:not(:disabled) { border-color: var(--accent); background: rgba(88,166,255,.1); }
+  button.ctl:disabled { opacity: .35; cursor: default; }
+  button.ctl.primary { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+  button.ctl.primary:hover:not(:disabled) { background: #79b8ff; }
+  .progress { flex: 1; display: flex; gap: 5px; min-width: 140px; }
+  .progress .tick { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background .3s; }
+  .progress .tick.done { background: var(--accent); }
+  .stepcount { color: var(--muted); font-size: .8rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82em; background: var(--panel2); }
+
+  .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
+  .icard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .icard .ic-title { font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+  .icard .ic-title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
+  .icard p { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .icard p code { background: rgba(88,166,255,.12); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+
+  /* chain brief card */
+  .brief {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: .74rem; color: var(--muted); line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+  }
+  .brief b { color: var(--text); }
+  .brief .hl { color: var(--green); }
+
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 40px 0 60px; border-top: 1px solid var(--border); margin-top: 80px; }
+</style>
+</head>
+<body>
+
+<nav class="crumbs"><a href="index.html">← All animations</a></nav>
+
+<header>
+  <h1>Per-Project Runtimes &amp; the Chain of Command</h1>
+  <p class="sub">Every activated project gets its own AgentCore runtime — the shared worker image with the project's S3 Files access point mounted at <code class="mono">/mnt/files</code>. Then: how one pulse fans out from the Team Lead through a persona orchestrator to researcher sub-agents, all sharing that one file tree.</p>
+  <div class="keyline">Isolation comes from the mount, not from tool checks — there is no other project's data anywhere in the container.</div>
+</header>
+
+<main>
+
+<!-- ══════════════ 1. PROVISIONING ══════════════ -->
+<section id="provisioning">
+  <h2><span class="num">1</span> Provisioning at project activation</h2>
+  <p class="lead">Activating a project runs a two-step provision in <code class="mono">projects.ts</code>: create the S3 Files access point, then create the AgentCore runtime that mounts it. Both are idempotent — the project id doubles as the client token.</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Provision sequence <span class="tbl">projects.ts (activate)</span></h3>
+      <div class="prov-steps" id="p-steps">
+        <div class="pstep"><div class="pdot">1</div><div class="pbody"><b>Create the access point</b><p><code>CreateAccessPoint</code> rooted at <code>/{projectId}</code> in the S3 Files file system (itself scoped to <code>projects/</code> in the artifacts bucket). POSIX uid/gid 1000, <code>clientToken: projectId</code>.</p></div></div>
+        <div class="pstep"><div class="pdot">2</div><div class="pbody"><b>Read the runtime recipe from SSM</b><p><code>AGENTCORE_PROJECT_RUNTIME_CONFIG_PARAM</code> — the infra stack publishes image URI, execution role, VPC subnets/SGs, mount path, and baseline env vars. Fetched fresh per activation.</p></div></div>
+        <div class="pstep"><div class="pdot">3</div><div class="pbody"><b>Create the runtime</b><p><code>CreateAgentRuntime</code>: name <code>project_&lt;uuid&gt;</code> (hyphens forbidden), the shared worker image, VPC networking, env <code>PROJECT_ID</code> + <code>PROJECT_FILES_DIR</code>, and <code>filesystemConfigurations</code> mounting the access point at <code>/mnt/files</code>.</p></div></div>
+        <div class="pstep"><div class="pdot">4</div><div class="pbody"><b>CREATING → READY (async)</b><p>Typically a couple of minutes. Runs dispatched before READY fail that invocation — and are recovered by the sweeper's stale-pending redispatch.</p></div></div>
+        <div class="pstep"><div class="pdot">5</div><div class="pbody"><b>Persist the ARNs</b><p>Both land on the project row: <code>s3AccessPointArn</code>, <code>agentRuntimeArn</code>. From now on, dispatch routing reads them.</p></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Project row <span class="tbl">project</span></h3>
+      <table class="state">
+        <thead><tr><th>field</th><th>value</th></tr></thead>
+        <tbody id="p-row"></tbody>
+      </table>
+      <h3 style="margin-top:18px">Runtime status <span class="tbl">AgentCore control plane</span></h3>
+      <table class="state">
+        <thead><tr><th>runtime</th><th>image</th><th>status</th></tr></thead>
+        <tbody id="p-rt"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="p-stage"></div>
+    <p id="p-caption"></p>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="p-prev">← Back</button>
+    <button class="ctl primary" id="p-next">Next →</button>
+    <div class="progress" id="p-progress"></div>
+    <span class="stepcount" id="p-stepcount"></span>
+    <button class="ctl" id="p-reset">Reset</button>
+  </div>
+
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Idempotent by client token</div>
+      <p>A retried activation returns the same access point and runtime instead of duplicating. If the runtime was created but the ARN never reached the project row (DB update failed) and the token has rotated out, a <code>ConflictException</code> is recovered by looking the runtime up by name.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Graceful degradation</div>
+      <p>No <code>S3_FILES_FILE_SYSTEM_ID</code> or no SSM param (local dev, minimal envs) → the helpers are no-ops, the project row keeps null ARNs, and dispatch simply falls back to the shared platform runtime. Nothing breaks — file tools return a structured "not available" error.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>The deploy caveat</div>
+      <p>Deploying <code>ResearchWorkbench/AgentCoreRuntime</code> updates the shared runtime and the SSM recipe — which affects <b>future</b> project runtimes only. Existing <code>project_*</code> runtimes keep their activation-time worker image; there is no <code>UpdateAgentRuntime</code> path in the repo today. Relevant to your /ping fix: already-activated projects still run the old image until recreated.</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <span class="file-chip" data-path="packages/orpc/routes/projects.ts">packages/orpc/routes/projects.ts (activation flow)</span>
+    <span class="file-chip" data-path="packages/orpc/routes/s3files-shared.ts">packages/orpc/routes/s3files-shared.ts (createProjectAccessPoint)</span>
+    <span class="file-chip" data-path="packages/orpc/routes/agentcore-runtime-shared.ts">packages/orpc/routes/agentcore-runtime-shared.ts (createProjectRuntime)</span>
+    <span class="file-chip" data-path="apps/infra/lib/stacks/agentcore/runtime/agentcore-runtime-stack.ts">apps/infra/lib/stacks/agentcore/runtime/agentcore-runtime-stack.ts (SSM recipe)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 2. DISPATCH ROUTING ══════════════ -->
+<section id="routing">
+  <h2><span class="num">2</span> How a run finds its runtime</h2>
+  <p class="lead"><code class="mono">resolveRuntimeArn</code> in the dispatch layer: look up the run's project → use <code class="mono">project.agentRuntimeArn</code> if set, else the shared platform runtime. Two special cases.</p>
+  <div class="panel">
+    <table class="state">
+      <thead><tr><th>what's being dispatched</th><th>runtime</th><th>why</th></tr></thead>
+      <tbody>
+        <tr><td>Lead / persona / sub-agent run of a provisioned project</td><td><span class="badge ready mono">project_&lt;id&gt;</span></td><td style="color:var(--muted)">The run row's <code class="mono">projectId</code> → <code class="mono">agentRuntimeArn</code>. Whole tree gets the <code class="mono">/mnt/files</code> mount.</td></tr>
+        <tr><td>Heartbeat delivery <span class="mono" style="color:var(--muted)">{kind: "heartbeat"}</span></td><td><span class="badge running mono">shared</span></td><td style="color:var(--muted)">Carries no run yet — but the lead run it <em>creates</em> is then dispatched normally, landing on the project runtime.</td></tr>
+        <tr><td>Projectless runs (personal task threads)</td><td><span class="badge running mono">shared</span></td><td style="color:var(--muted)">No project row → fallback ARN from <code class="mono">AGENTCORE_RUNTIME_ARN</code>.</td></tr>
+        <tr><td>Local dev</td><td><span class="badge null mono">localhost</span></td><td style="color:var(--muted)"><code class="mono">AGENTCORE_LOCAL_URL</code> set → same JSON payload POSTed to the worker's local <code class="mono">/invocations</code>. No AWS involved.</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted); font-size:.86rem; margin-top:14px;">
+      Every invocation still gets a fresh <code class="mono">runtimeSessionId</code> — the runtime is per-<em>project</em>, but the session is per-<em>segment</em>, so AgentCore scales each segment into its own isolated microVM instead of serializing a whole team onto one.
+    </p>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/queue/agentcore.ts">packages/queue/agentcore.ts (resolveRuntimeArn, invokeAgentCoreRuntime)</span>
+  </div>
+</section>
+
+<!-- ══════════════ 3. CHAIN OF COMMAND ══════════════ -->
+<section id="chain">
+  <h2><span class="num">3</span> One pulse, top to bottom</h2>
+  <p class="lead">Project <code class="mono">4a92</code> is provisioned. Follow a single knowledge pulse from the Team Lead down to researcher sub-agents — every session lands on the same project runtime, every agent sees the same <code class="mono">/mnt/files</code>.</p>
+
+  <div class="walk-grid">
+    <div class="card" style="grid-column: 1 / -1;">
+      <h3>Project runtime <span class="tbl">project_4a92… — sessions come and go, the mount is constant</span></h3>
+      <div class="rt-box" id="c-rtbox">
+        <div class="rt-title"><span>project_4a92…</span><span style="color:var(--muted); font-weight:400">worker image · VPC · PROJECT_ID=4a92</span></div>
+        <div class="rt-sessions" id="c-sessions"></div>
+        <div class="rt-mount" id="c-mount">/mnt/files ⇄ S3 Files access point → s3://artifacts/projects/4a92…/</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Run tree <span class="tbl">run rows</span></h3>
+      <table class="state">
+        <thead><tr><th>id</th><th>who</th><th>status</th></tr></thead>
+        <tbody id="c-tree"></tbody>
+      </table>
+      <h3 style="margin-top:16px">The brief handed down <span class="tbl">buildAgentBrief → run.input</span></h3>
+      <div class="brief" id="c-brief"></div>
+    </div>
+
+    <div class="card">
+      <h3>Shared files <span class="tbl">s3://artifacts/projects/4a92…/ (= the Files tab)</span></h3>
+      <div class="s3-tree" id="c-s3"></div>
+      <h3 style="margin-top:16px">Knowledge graph writes <span class="tbl">provenance-stamped</span></h3>
+      <div class="s3-tree" id="c-graph"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="c-stage"></div>
+    <p id="c-caption"></p>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="c-prev">← Back</button>
+    <button class="ctl primary" id="c-next">Next →</button>
+    <div class="progress" id="c-progress"></div>
+    <span class="stepcount" id="c-stepcount"></span>
+    <button class="ctl" id="c-reset">Reset</button>
+  </div>
+  <p style="color: var(--muted); font-size: .78rem; margin-top: 10px;">Tip: use <span class="kbd">←</span> <span class="kbd">→</span> arrow keys to step.</p>
+
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>The shell tool's containment model</div>
+      <p><code>projectFilesShell</code> runs <code>bash -c</code> with <code>PROJECT_FILES_DIR</code> as cwd. Commands <em>can</em> leave the cwd — reachability is decided by the mount, not the tool. The child process gets a scrubbed environment so live Aurora credentials in the worker's <code>process.env</code> never leak into <code>env</code> output. On the shared runtime (no mount) the tool returns a structured error instead.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Why persona roots inherit tools</div>
+      <p>The root run's <code>agentType</code> is the persona's UUID — that's how descendants inherit the persona's specialist tools (<code>resolveInheritedToolIds</code>) and how graph writes resolve their author (<code>resolveRunAuthor</code> walks to the root).</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>The brief is the only context</div>
+      <p>Sub-agents see nothing but their plan-task <code>spec</code> — no lead chat, no parent transcript. That's why <code>buildAgentBrief</code> and every spawn brief must be self-contained: goal, constraints, budget, and the explicit instruction to persist findings to the graph (the research loop reacts only to what lands there).</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/orchestration/project-agents.ts">packages/agent/core/orchestration/project-agents.ts (startProjectAgent, buildAgentBrief)</span>
+    <span class="file-chip" data-path="packages/agent/core/orchestration/lead-tools.ts">packages/agent/core/orchestration/lead-tools.ts</span>
+    <span class="file-chip" data-path="packages/agent/core/tools/files/shell.ts">packages/agent/core/tools/files/shell.ts (projectFilesShell)</span>
+    <span class="file-chip" data-path="apps/worker/src/processors.ts">apps/worker/src/processors.ts (persona tools + orchestration tools)</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  One runtime per project · one mount per runtime · one fresh session per segment · the file boundary is the access point, all the way down.
+</footer>
+
+<script>
+/* file chips */
+document.querySelectorAll(".file-chip").forEach(chip => {
+  chip.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(chip.dataset.path);
+      chip.classList.add("copied");
+      setTimeout(() => chip.classList.remove("copied"), 1400);
+    } catch { /* clipboard unavailable on file:// is fine */ }
+  });
+});
+
+/* shared stepper factory */
+function makeStepper(prefix, steps, render) {
+  let idx = 0;
+  const $progress = document.getElementById(prefix + "-progress");
+  const $stepcount = document.getElementById(prefix + "-stepcount");
+  const $prev = document.getElementById(prefix + "-prev");
+  const $next = document.getElementById(prefix + "-next");
+  steps.forEach(() => {
+    const t = document.createElement("div");
+    t.className = "tick";
+    $progress.appendChild(t);
+  });
+  function draw() {
+    render(steps[idx], idx);
+    [...$progress.children].forEach((t, i) => t.classList.toggle("done", i <= idx));
+    $stepcount.textContent = "step " + (idx + 1) + " / " + steps.length;
+    $prev.disabled = idx === 0;
+    $next.disabled = idx === steps.length - 1;
+  }
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n >= steps.length) return;
+    idx = n;
+    draw();
+  }
+  $next.addEventListener("click", () => go(1));
+  $prev.addEventListener("click", () => go(-1));
+  document.getElementById(prefix + "-reset").addEventListener("click", () => { idx = 0; draw(); });
+  draw();
+  return { go };
+}
+
+const steppers = {};
+let activeStepper = "p";
+[["provisioning","p"],["chain","c"]].forEach(([secId, prefix]) => {
+  document.getElementById(secId).addEventListener("click", () => { activeStepper = prefix; });
+});
+document.addEventListener("keydown", (e) => {
+  const st = steppers[activeStepper];
+  if (!st) return;
+  if (e.key === "ArrowRight") st.go(1);
+  if (e.key === "ArrowLeft") st.go(-1);
+});
+
+/* ════════════ 1. Provisioning stepper ════════════ */
+(function () {
+  const steps = [
+    {
+      stage: "Step 1 · Access point",
+      cap: "Activation begins. <code>createProjectAccessPoint(4a92…)</code> creates an S3 Files access point rooted at <code>/4a92…</code> — the file system is already scoped to <code>projects/</code>, so compute mounting through it sees exactly <code>s3://artifacts/projects/4a92…/</code> and nothing else. Idempotent: <code>clientToken = projectId</code>.",
+      on: 1, row: { ap: "arn:…:access-point/ap-4a92", rt: "null" }, rt: null,
+    },
+    {
+      stage: "Step 2 · Read the recipe",
+      cap: "<code>createProjectRuntime</code> reads the SSM parameter the infra stack published: worker image URI, execution role, VPC subnets and security groups, <code>/mnt/files</code> mount path, and the baseline env vars every project runtime needs. Fetched fresh per activation — activations are rare and the recipe changes on deploys.",
+      on: 2, row: { ap: "arn:…:access-point/ap-4a92", rt: "null" }, rt: null,
+    },
+    {
+      stage: "Step 3 · CreateAgentRuntime",
+      cap: "The control-plane call: name <code>project_4a92…</code> (underscores — runtime names forbid hyphens), the shared worker image in VPC mode, env <code>PROJECT_ID</code> + <code>PROJECT_FILES_DIR=/mnt/files</code>, and the <code>filesystemConfigurations</code> block that mounts the access point into <b>every session</b> this runtime will ever host.",
+      on: 3, row: { ap: "arn:…:access-point/ap-4a92", rt: "null" }, rt: { img: "worker:2026-08-01", status: "creating" },
+    },
+    {
+      stage: "Step 4 · CREATING → READY",
+      cap: "Creation is asynchronous — typically a couple of minutes. A run dispatched during this window fails its invocation, sits in <code>pending</code>, and the sweeper's stale-pending pass re-dispatches it once the runtime is READY. No special-case code needed: the recovery path already existed.",
+      on: 4, row: { ap: "arn:…:access-point/ap-4a92", rt: "null" }, rt: { img: "worker:2026-08-01", status: "ready" }, flash: true,
+    },
+    {
+      stage: "Step 5 · ARNs on the project row",
+      cap: "Both ARNs persist to the project row. From now on <code>resolveRuntimeArn</code> routes every run in this project — lead, persona, sub-agent — to <code>project_4a92…</code>. Deletion later is best-effort teardown of both resources.",
+      on: 5, row: { ap: "arn:…:access-point/ap-4a92", rt: "arn:…:runtime/project_4a92" }, rt: { img: "worker:2026-08-01", status: "ready" }, flash: true,
+    },
+  ];
+
+  const $steps = [...document.querySelectorAll("#p-steps .pstep")];
+  const $row = document.getElementById("p-row");
+  const $rt = document.getElementById("p-rt");
+  const $stage = document.getElementById("p-stage");
+  const $caption = document.getElementById("p-caption");
+
+  steppers.p = makeStepper("p", steps, (s) => {
+    $steps.forEach((el, i) => {
+      el.classList.toggle("on", i < s.on);
+      el.classList.toggle("pass", i < s.on - 1);
+    });
+
+    $row.innerHTML = "";
+    [["s3AccessPointArn", s.row.ap], ["agentRuntimeArn", s.row.rt]].forEach(([k, v]) => {
+      const tr = document.createElement("tr");
+      if (s.flash && v !== "null") tr.classList.add("flash");
+      tr.innerHTML = `<td class="mono" style="color:var(--muted)">${k}</td><td class="mono" style="font-size:.7rem">${v === "null" ? '<span class="badge null">null</span>' : v}</td>`;
+      $row.appendChild(tr);
+    });
+
+    $rt.innerHTML = "";
+    if (!s.rt) {
+      $rt.innerHTML = `<tr><td colspan="3" style="color:#4a5568;text-align:center;padding:12px">no project runtime yet</td></tr>`;
+    } else {
+      const tr = document.createElement("tr");
+      if (s.flash) tr.classList.add("flash");
+      tr.innerHTML =
+        `<td class="mono"><b>project_4a92…</b></td><td class="mono" style="font-size:.7rem">${s.rt.img}</td>` +
+        `<td><span class="badge ${s.rt.status}">${s.rt.status.toUpperCase()}</span></td>`;
+      $rt.appendChild(tr);
+    }
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+  });
+})();
+
+/* ════════════ 3. Chain-of-command stepper ════════════ */
+(function () {
+  const sess = (who, st, cls) => ({ who, st, cls });
+  const runrow = (id, who, status) => ({ id, who, status });
+  const fil = (name, by, isNew) => ({ name, by, isNew: !!isNew });
+
+  const BRIEF_LEAD = `<b>[Knowledge pulse]</b> 5 new findings have accumulated since your last sufficiency decision…`;
+  const BRIEF_PERSONA = `<b>Title:</b> Ada — Kinase X inhibition<br/><b>Project:</b> seed hypothesis, $100 budget, check-in cadence<br/><b>Persona guidance:</b> Ada's system prompt (how you operate)<br/><span class="hl">Findings must be persisted to the shared knowledge graph — record observations, write supporting facts, linkEvidence to the seed hypothesis.</span>`;
+  const BRIEF_SUB = `<b>Self-contained spec (the sub-agent sees NOTHING else):</b><br/>Goal: dock the candidate set against Kinase X conformers.<br/>Inputs: <span class="hl">/mnt/files/candidates.sdf</span> (from the Files tab)<br/>Output: write scores to <span class="hl">/mnt/files/results/docking.csv</span>, record an observation per significant hit, linkEvidence to the seed hypothesis.`;
+
+  const steps = [
+    {
+      stage: "Step 1 · The user seeds the file tree",
+      cap: "Before any agent runs, the user drops <code>candidates.sdf</code> into the project's Files tab — which is just <code>s3://artifacts/projects/4a92…/</code>. The runtime exists (provisioned at activation) but hosts no sessions; the mount is configured on the runtime itself, waiting.",
+      sessions: [], tree: [], brief: `<span style="color:#4a5568">— no runs yet —</span>`,
+      s3: [fil("candidates.sdf", "uploaded by user")], graph: [],
+    },
+    {
+      stage: "Step 2 · Pulse → lead session",
+      cap: "A knowledge pulse posts to the lead thread and dispatches a lead run. <code>resolveRuntimeArn</code>: the run has <code>projectId 4a92</code> → it lands on <code>project_4a92…</code> in a fresh session. (The heartbeat <em>delivery</em> itself ran on the shared runtime — it carried no run yet.)",
+      sessions: [sess("Team Lead", "● executing", "busy")],
+      tree: [runrow("L1", "team lead", "running")],
+      brief: BRIEF_LEAD,
+      s3: [fil("candidates.sdf", "uploaded by user")], graph: [],
+      mountHot: false,
+    },
+    {
+      stage: "Step 3 · Lead starts Ada",
+      cap: "The lead judges the new knowledge sufficient to act and calls <code>startProjectAgent(Ada)</code>: budget gate → <code>buildAgentBrief</code> (project context, persona guidance, and the mandatory graph-persistence instructions) → <code>createRootRun(agentType: ada-uuid)</code> → guarded roster flip → dispatch. Ada's root claims a fresh session <em>on the same runtime</em>.",
+      sessions: [sess("Team Lead", "settled", "settled"), sess("Ada · root R1", "● executing", "busy")],
+      tree: [runrow("L1", "team lead", "succeeded"), runrow("R1", "Ada (root orchestrator)", "running")],
+      brief: BRIEF_PERSONA,
+      s3: [fil("candidates.sdf", "uploaded by user")], graph: [],
+    },
+    {
+      stage: "Step 4 · Ada plans and reads the files",
+      cap: "Ada's root is an orchestrator <em>with</em> her specialist tools. She inspects the shared tree first — <code>projectFilesShell: ls -la</code> runs bash with <code>/mnt/files</code> as cwd and a scrubbed env — finds <code>candidates.sdf</code>, then <code>create_plan</code>: dock the set (P1), pull assay literature (P2). Each spawn brief points sub-agents at the exact file paths, because <b>the brief is all they will ever see</b>.",
+      sessions: [sess("Ada · root R1", "● executing", "busy")],
+      tree: [runrow("R1", "Ada (root)", "running")],
+      brief: BRIEF_SUB,
+      s3: [fil("candidates.sdf", "read by Ada · ls -la")], graph: [],
+      mountHot: true,
+    },
+    {
+      stage: "Step 5 · Researchers fan out",
+      cap: "<code>spawn_subagents([P1, P2])</code> creates researcher runs <code>C1</code>/<code>C2</code> and dispatches each — fresh sessions, same runtime, same mount. Ada's segment ends, <code>yieldRun</code> parks R1, her session settles. The runtime now hosts only the two researchers; the parent costs nothing while they work.",
+      sessions: [sess("Ada · root R1", "settled", "settled"), sess("C1 · docking", "● executing", "busy"), sess("C2 · literature", "● executing", "busy")],
+      tree: [runrow("R1", "Ada (root)", "waiting_on_children"), runrow("C1", "researcher (docking)", "running"), runrow("C2", "researcher (literature)", "running")],
+      brief: BRIEF_SUB,
+      s3: [fil("candidates.sdf", "read by C1")], graph: [],
+    },
+    {
+      stage: "Step 6 · Work lands in both stores",
+      cap: "C1 reads <code>candidates.sdf</code>, runs docking, and writes <code>results/docking.csv</code> through the shell tool — instantly visible in the Files tab and to every teammate, because it's the same access point. Both researchers record observations and facts to the graph, provenance-stamped with <code>projectId</code>/<code>runId</code>/author from <code>experimental_context</code>.",
+      sessions: [sess("C1 · docking", "● executing", "busy"), sess("C2 · literature", "● executing", "busy")],
+      tree: [runrow("R1", "Ada (root)", "waiting_on_children"), runrow("C1", "researcher (docking)", "running"), runrow("C2", "researcher (literature)", "running")],
+      brief: BRIEF_SUB,
+      s3: [fil("candidates.sdf", "read by C1"), fil("results/docking.csv", "written by C1", true)],
+      graph: [fil(":Observation — compound A binds conformer 2", "C1 · Ada", true), fil(":Infon — Compound A inhibits Kinase X", "C1 · Ada", true), fil(":Observation — 3 papers support scaffold", "C2 · Ada", true)],
+      mountHot: true,
+    },
+    {
+      stage: "Step 7 · Results bubble up",
+      cap: "The researchers finish → results copy onto their plan tasks → guarded resume wakes R1 in a fresh session. Ada integrates (she can <code>cat results/docking.csv</code> herself — same mount), writes her synthesis to <code>results/summary.md</code>, and finishes. Her root going terminal fires the knowledge pulse check…",
+      sessions: [sess("C1 · docking", "settled", "settled"), sess("C2 · literature", "settled", "settled"), sess("Ada · root R1 (resume)", "● executing", "busy")],
+      tree: [runrow("R1", "Ada (root)", "running"), runrow("C1", "researcher (docking)", "succeeded"), runrow("C2", "researcher (literature)", "succeeded")],
+      brief: BRIEF_PERSONA,
+      s3: [fil("candidates.sdf", ""), fil("results/docking.csv", "written by C1"), fil("results/summary.md", "written by Ada", true)],
+      graph: [fil(":Observation — compound A binds conformer 2", "C1 · Ada"), fil(":Infon — Compound A inhibits Kinase X", "C1 · Ada"), fil(":Observation — 3 papers support scaffold", "C2 · Ada"), fil(":Hypothesis — scaffold B merits synthesis", "Ada", true)],
+    },
+    {
+      stage: "Step 8 · The loop closes",
+      cap: "…and the lead is pulsed with the new findings, in yet another fresh session on the same runtime. Full circle: <b>pulse → lead → persona → researchers → files + graph → terminal → pulse</b>. Every hop was a disposable session; the only constants were Postgres, the graph, and <code>/mnt/files</code>.",
+      sessions: [sess("Team Lead (pulsed)", "● executing", "busy")],
+      tree: [runrow("R1", "Ada (root)", "succeeded"), runrow("C1", "researcher", "succeeded"), runrow("C2", "researcher", "succeeded"), runrow("L2", "team lead (pulse)", "running")],
+      brief: BRIEF_LEAD,
+      s3: [fil("candidates.sdf", ""), fil("results/docking.csv", ""), fil("results/summary.md", "visible in the Files tab")],
+      graph: [fil("4 new findings since watermark", "await the lead's sufficiency decision", true)],
+    },
+  ];
+
+  const $sessions = document.getElementById("c-sessions");
+  const $mount = document.getElementById("c-mount");
+  const $tree = document.getElementById("c-tree");
+  const $brief = document.getElementById("c-brief");
+  const $s3 = document.getElementById("c-s3");
+  const $graph = document.getElementById("c-graph");
+  const $stage = document.getElementById("c-stage");
+  const $caption = document.getElementById("c-caption");
+  const $rtbox = document.getElementById("c-rtbox");
+
+  steppers.c = makeStepper("c", steps, (s) => {
+    $rtbox.classList.toggle("lit", s.sessions.some(x => x.cls === "busy"));
+
+    $sessions.innerHTML = "";
+    if (s.sessions.length === 0) {
+      $sessions.innerHTML = `<div style="color:#4a5568;font-size:.72rem;font-family:'SF Mono',monospace">— runtime idle, no sessions —</div>`;
+    }
+    s.sessions.forEach(x => {
+      const d = document.createElement("div");
+      d.className = "rt-sess " + x.cls;
+      d.innerHTML = `<span class="who">${x.who}</span><span class="st">${x.st}</span>`;
+      $sessions.appendChild(d);
+    });
+
+    $mount.classList.toggle("hot", !!s.mountHot);
+
+    $tree.innerHTML = "";
+    if (s.tree.length === 0) {
+      $tree.innerHTML = `<tr><td colspan="3" style="color:#4a5568;text-align:center;padding:10px">no runs yet</td></tr>`;
+    }
+    s.tree.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        `<td class="mono"><b>${r.id}</b></td><td style="color:var(--muted);font-size:.74rem">${r.who}</td>` +
+        `<td><span class="badge ${r.status === "waiting_on_children" ? "waiting" : r.status}">${r.status}</span></td>`;
+      $tree.appendChild(tr);
+    });
+
+    $brief.innerHTML = s.brief;
+
+    $s3.innerHTML = `<div class="dir">projects/4a92…/</div>`;
+    if (s.s3.length === 0) $s3.innerHTML += `<div class="empty">  (empty)</div>`;
+    s.s3.forEach(f => {
+      const d = document.createElement("div");
+      d.className = "fil" + (f.isNew ? " new" : "");
+      d.innerHTML = `  ${f.name} ${f.by ? `<span class="by">— ${f.by}</span>` : ""}`;
+      $s3.appendChild(d);
+    });
+
+    $graph.innerHTML = "";
+    if (s.graph.length === 0) {
+      $graph.innerHTML = `<div class="empty">— nothing new since the watermark —</div>`;
+    }
+    s.graph.forEach(f => {
+      const d = document.createElement("div");
+      d.className = "fil" + (f.isNew ? " new" : "");
+      d.innerHTML = `${f.name} <span class="by">— ${f.by}</span>`;
+      $graph.appendChild(d);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+# ===================
+# Shared / OS
+# ===================
+.DS_Store
+**/._*
+node_modules/
+
+# ===================
+# Office & docs (not code artifacts)
+# ===================
+~$*
+*.docx
+*.pptx
+*.pdf
+
+# Customer-facing markdown (not source)
+kickoff-standup-agenda.md
+data-questions-for-customer.md
+meeting-coordination.md
+proposal/
+
+# ===================
+# Python
+# ===================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.so
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ===================
+# IDE / Editor
+# ===================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===================
+# Environment
+# ===================
+.env
+.env.local
+.secrets.toml
+
+# ===================
+# Jupyter
+# ===================
+.ipynb_checkpoints/
+
+# ===================
+# CDK
+# ===================
+cdk.out/
+cdk.context.json
+
+
+# ===================
+# Local artifact store (dev-mode S3 replacement)
+# ===================
+local_artifacts/
+
+# ===================
+# Logs
+# ===================
+*.log
+
+# ===================
+# Database files (local dev)
+# ===================
+*.sqlite
+*.sqlite3
+*.db
+
+# ===================
+# Node / Next.js / Turbo / Vercel
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ===================
+
+# Dependencies
+.pnp
+.pnp.js
+
+# Local env files
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Testing
+coverage
+
+# Turbo
+.turbo
+
+# Vercel
+.vercel
+
+# Build Outputs
+.next/
+out/
+# TypeScript incremental build cache — full of high-entropy hashes that trip
+# secret scanners, and never useful in git.
+*.tsbuildinfo
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+*.pem
+.ash/
+docs/
+temp/
+guidance-docs/

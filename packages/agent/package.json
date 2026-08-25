@@ -1,0 +1,56 @@
+{
+  "name": "@repo/agent",
+  "version": "1.0.0",
+  "description": "Single-agent runtime for the Autonomous Research Workbench. Runs a Bedrock-backed agent loop and streams typed events over Electric Streams.",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./agent": "./core/agent.ts",
+    "./config": "./core/config.ts",
+    "./runtimes": "./core/runtimes/index.ts",
+    "./runtimes/stream": "./core/runtimes/stream.ts",
+    "./runtimes/console": "./core/runtimes/console.ts",
+    "./prompts": "./core/prompts/default.ts",
+    "./prompts/orchestrator": "./core/prompts/orchestrator.ts",
+    "./prompts/team-lead": "./core/prompts/team-lead.ts",
+    "./orchestration": "./core/orchestration/index.ts",
+    "./orchestration/store": "./core/orchestration/store.ts",
+    "./orchestration/knowledge": "./core/orchestration/knowledge.ts",
+    "./orchestration/usage": "./core/orchestration/usage.ts",
+    "./orchestration/project-agents": "./core/orchestration/project-agents.ts",
+    "./lib/streams": "./core/lib/streams.ts",
+    "./tools": "./core/tools/index.ts",
+    "./tools/catalog": "./core/tools/catalog.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^4.0.72",
+    "@ai-sdk/anthropic": "^3.0.53",
+    "@aws-sdk/client-bedrock-agentcore": "^3.1075.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1076.0",
+    "@aws-sdk/client-sesv2": "3.1086.0",
+    "@aws-sdk/credential-providers": "^3.972.56",
+    "@durable-streams/client": "^0.2.6",
+    "@lancedb/lancedb": "^0.30.0",
+    "@repo/database": "workspace:*",
+    "@repo/graph": "workspace:*",
+    "@repo/streams-protocol": "workspace:*",
+    "ai": "^6.0.108",
+    "ai-tokenizer": "^1.0.6",
+    "bedrock-agentcore": "^0.4.1",
+    "playwright": "1.61.1",
+    "tokenlens": "^1.3.1",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.9.3"
+  }
+}

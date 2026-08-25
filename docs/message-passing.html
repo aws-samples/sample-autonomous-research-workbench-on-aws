@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Message Passing &amp; Sync — Animated Walkthrough</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2330;
+    --border: #2d3646;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+
+  header {
+    padding: 64px 24px 40px; text-align: center;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(240,136,62,.14), transparent),
+      radial-gradient(ellipse 40% 60% at 80% 0%, rgba(88,166,255,.10), transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+  header p.sub { color: var(--muted); margin-top: 10px; max-width: 760px; margin-left: auto; margin-right: auto; }
+  .keyline {
+    display: inline-block; margin-top: 22px; padding: 10px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--orange); font-weight: 600;
+  }
+  nav.crumbs { padding: 14px 24px; font-size: .82rem; color: var(--muted); }
+  nav.crumbs a { color: var(--accent); text-decoration: none; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 24px 120px; }
+  section { margin-top: 72px; }
+  section > h2 { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  section > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+    background: rgba(240,136,62,.15); color: var(--orange); font-size: .9rem;
+  }
+  section > p.lead { color: var(--muted); margin-top: 8px; max-width: 840px; }
+  .panel { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+
+  .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .72rem;
+    color: var(--cyan); cursor: pointer; transition: border-color .2s;
+  }
+  .file-chip:hover { border-color: var(--cyan); }
+  .file-chip::before { content: "📄"; font-size: .8rem; }
+  .file-chip.copied { border-color: var(--green); color: var(--green); }
+  .file-chip.copied::after { content: " copied"; color: var(--green); font-size: .68rem; }
+
+  /* two channels */
+  .channels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .channels { grid-template-columns: 1fr; } }
+  .channel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .channel h4 { display: flex; align-items: center; gap: 10px; font-size: 1rem; }
+  .channel h4 .icon { font-size: 1.3rem; }
+  .channel .tagline { margin-top: 8px; display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: .72rem; font-weight: 700; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .channel.live .tagline { background: rgba(240,136,62,.12); color: var(--orange); border: 1px solid rgba(240,136,62,.35); }
+  .channel.persist .tagline { background: rgba(88,166,255,.12); color: var(--accent); border: 1px solid rgba(88,166,255,.35); }
+  .channel ul { margin: 12px 0 0 18px; color: var(--muted); font-size: .8rem; }
+  .channel li { margin-top: 5px; }
+  .channel li code { background: rgba(88,166,255,.12); padding: 0 5px; border-radius: 4px; font-size: .88em; }
+  .channel li b { color: var(--text); }
+
+  /* flow stepper */
+  .flow-wrap { display: flex; justify-content: center; overflow-x: auto; margin-top: 4px; }
+  .flow-node rect { fill: var(--panel2); stroke: var(--border); stroke-width: 1.5; transition: stroke .4s, fill .4s; }
+  .flow-node text { fill: var(--text); font-size: 12px; font-weight: 600; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .flow-node .sublabel { fill: var(--muted); font-size: 9.5px; font-weight: 400; }
+  .flow-node.active rect { stroke: var(--orange); fill: rgba(240,136,62,.12); }
+  .flow-edge { stroke: var(--border); stroke-width: 1.6; fill: none; marker-end: url(#mparrow); transition: stroke .4s, stroke-dasharray .4s; }
+  .flow-edge.active { stroke: var(--orange); stroke-width: 2.4; }
+  .flow-edge.live-edge.active { stroke: var(--orange); stroke-dasharray: 6 5; animation: dashmove 1s linear infinite; }
+  .flow-edge.sync-edge.active { stroke: var(--accent); }
+  @keyframes dashmove { to { stroke-dashoffset: -22; } }
+  .flow-label { fill: var(--muted); font-size: 10px; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+
+  /* chat mock */
+  .chat-mock { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; min-height: 170px; display: flex; flex-direction: column; gap: 8px; }
+  .cmsg { padding: 8px 12px; border-radius: 10px; max-width: 88%; font-size: .8rem; animation: cpop .4s ease; }
+  @keyframes cpop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .cmsg.user { background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.3); align-self: flex-end; }
+  .cmsg.agent { background: rgba(240,136,62,.09); border: 1px solid rgba(240,136,62,.3); align-self: flex-start; }
+  .cmsg.agent.tokens { color: var(--muted); font-style: italic; }
+  .cmsg .src { display: block; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .cmsg.agent.tokens .src { color: var(--orange); }
+  .cmsg.agent.final .src { color: var(--accent); }
+  .cursor { display: inline-block; width: 7px; height: 13px; background: var(--orange); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .walk-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .walk-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .card h3 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .card h3 .tbl { color: var(--cyan); font-family: "SF Mono", ui-monospace, Menlo, monospace; text-transform: none; letter-spacing: 0; font-size: .76rem; }
+
+  .caption {
+    margin-top: 18px; padding: 18px 20px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(240,136,62,.08), rgba(240,136,62,.03));
+    border: 1px solid rgba(240,136,62,.25); min-height: 96px;
+  }
+  .caption .stage { color: var(--orange); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+  .caption p { margin-top: 6px; font-size: .95rem; }
+  .caption p code { background: rgba(240,136,62,.12); padding: 1px 6px; border-radius: 5px; font-size: .85em; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  button.ctl {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 22px; font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  button.ctl:hover:not(:disabled) { border-color: var(--orange); background: rgba(240,136,62,.1); }
+  button.ctl:disabled { opacity: .35; cursor: default; }
+  button.ctl.primary { background: var(--orange); color: #0d1117; border-color: var(--orange); }
+  button.ctl.primary:hover:not(:disabled) { background: #f5a86e; }
+  .progress { flex: 1; display: flex; gap: 5px; min-width: 160px; }
+  .progress .tick { flex: 1; height: 5px; border-radius: 3px; background: var(--border); transition: background .3s; }
+  .progress .tick.done { background: var(--orange); }
+  .stepcount { color: var(--muted); font-size: .8rem; font-family: "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82em; background: var(--panel2); }
+
+  .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
+  .icard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .icard .ic-title { font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 8px; }
+  .icard .ic-title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--orange); flex: 0 0 auto; }
+  .icard p { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .icard p code { background: rgba(88,166,255,.12); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 40px 0 60px; border-top: 1px solid var(--border); margin-top: 80px; }
+</style>
+</head>
+<body>
+
+<nav class="crumbs"><a href="index.html">← All animations</a></nav>
+
+<header>
+  <h1>Message Passing &amp; Sync</h1>
+  <p class="sub">How a message travels from the user to an agent and back — over two complementary channels with very different guarantees.</p>
+  <div class="keyline">Durable streams are telemetry. Postgres + Electric is the truth.</div>
+</header>
+
+<main>
+
+<!-- ══════════════ 1. TWO CHANNELS ══════════════ -->
+<section id="channels">
+  <h2><span class="num">1</span> The two channels</h2>
+  <p class="lead">Live token streaming and persisted state sync are deliberately separate systems — one can die without taking the other down.</p>
+  <div class="channels">
+    <div class="channel live">
+      <h4><span class="icon">⚡</span> Durable streams — live telemetry</h4>
+      <span class="tagline">best-effort · per-run · append-only</span>
+      <ul>
+        <li>One JSON stream per run at <code>/v1/stream/run-{runId}</code> — per-run, not per-task, because a stream's close is <b>terminal</b> (a reused path would 409 on the next run)</li>
+        <li><code>TaskStreamWriter</code> appends typed events as the agent streams tokens</li>
+        <li><b>Bounded backoff</b> (4 retries, 30s append deadline): if the streams server is dead, events are <b>dropped with a warning</b> — the run itself is never wedged</li>
+        <li>Browser tails through an authenticated proxy that verifies the run belongs to the task/project (closes cross-task IDOR)</li>
+      </ul>
+    </div>
+    <div class="channel persist">
+      <h4><span class="icon">🗄️</span> Electric SQL — persisted truth</h4>
+      <span class="tagline">authenticated shapes · long-poll · Postgres-backed</span>
+      <ul>
+        <li>Four server-pinned shapes: <code>projects</code>, <code>projectAgents</code>, <code>projectRuns</code>, <code>taskMessages</code></li>
+        <li>The browser's TanStack DB collections long-poll <code>GET /sync/:shape</code>; the API scopes the shape server-side, then proxies to Electric</li>
+        <li><b>Writes never go through Electric</b> — they go through oRPC (or the worker) and sync back as row changes</li>
+        <li>Roster state (<code>project_agent.state</code>: working / idle / blocked) broadcasts live through the <code>projectAgents</code> shape</li>
+      </ul>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/lib/streams.ts">packages/agent/core/lib/streams.ts</span>
+    <span class="file-chip" data-path="apps/api/src/streams.ts">apps/api/src/streams.ts</span>
+    <span class="file-chip" data-path="apps/api/src/electric.ts">apps/api/src/electric.ts</span>
+    <span class="file-chip" data-path="apps/api/src/sync.ts">apps/api/src/sync.ts</span>
+  </div>
+</section>
+
+<!-- ══════════════ 2. CHAT FLOW STEPPER ══════════════ -->
+<section id="flow">
+  <h2><span class="num">2</span> One chat turn, end to end</h2>
+  <p class="lead">The user asks the Team Lead a question. Watch the message flow out over oRPC, tokens stream back live (dashed orange), and the persisted reply arrive via Electric (solid blue).</p>
+
+  <div class="walk-grid">
+    <div class="card">
+      <h3>Data flow</h3>
+      <div class="flow-wrap">
+        <svg id="flow-svg" width="620" height="420" viewBox="0 0 620 420">
+          <defs>
+            <marker id="mparrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5568"/>
+            </marker>
+          </defs>
+          <g id="f-browser" class="flow-node">
+            <rect x="20" y="20" width="150" height="56" rx="10"/>
+            <text x="95" y="44" text-anchor="middle">Browser</text>
+            <text x="95" y="60" text-anchor="middle" class="sublabel">TanStack DB + tail</text>
+          </g>
+          <g id="f-api" class="flow-node">
+            <rect x="240" y="20" width="150" height="56" rx="10"/>
+            <text x="315" y="44" text-anchor="middle">API</text>
+            <text x="315" y="60" text-anchor="middle" class="sublabel">oRPC + proxies</text>
+          </g>
+          <g id="f-pg" class="flow-node">
+            <rect x="240" y="140" width="150" height="56" rx="10"/>
+            <text x="315" y="164" text-anchor="middle">Postgres</text>
+            <text x="315" y="180" text-anchor="middle" class="sublabel">taskMessage · run</text>
+          </g>
+          <g id="f-worker" class="flow-node">
+            <rect x="450" y="140" width="150" height="56" rx="10"/>
+            <text x="525" y="164" text-anchor="middle">Worker</text>
+            <text x="525" y="180" text-anchor="middle" class="sublabel">AgentCore session</text>
+          </g>
+          <g id="f-streams" class="flow-node">
+            <rect x="450" y="270" width="150" height="56" rx="10"/>
+            <text x="525" y="294" text-anchor="middle">Streams server</text>
+            <text x="525" y="310" text-anchor="middle" class="sublabel">run-{runId}</text>
+          </g>
+          <g id="f-electric" class="flow-node">
+            <rect x="240" y="270" width="150" height="56" rx="10"/>
+            <text x="315" y="294" text-anchor="middle">Electric</text>
+            <text x="315" y="310" text-anchor="middle" class="sublabel">shape log</text>
+          </g>
+
+          <path id="fe-send" class="flow-edge" d="M 170 48 L 238 48"/>
+          <text class="flow-label" x="180" y="38">1 · oRPC send</text>
+          <path id="fe-insert" class="flow-edge" d="M 315 76 L 315 138"/>
+          <text class="flow-label" x="325" y="112">2 · insert + run</text>
+          <path id="fe-dispatch" class="flow-edge" d="M 390 168 L 448 168"/>
+          <text class="flow-label" x="393" y="158">3 · dispatch</text>
+          <path id="fe-tokens" class="flow-edge live-edge" d="M 525 196 L 525 268"/>
+          <text class="flow-label" x="535" y="236">4 · token events</text>
+          <path id="fe-tail" class="flow-edge live-edge" d="M 448 296 C 300 372, 60 240, 88 78"/>
+          <text class="flow-label" x="150" y="330">5 · tail via authenticated proxy</text>
+          <path id="fe-persist" class="flow-edge" d="M 448 152 C 420 120, 400 148, 392 152"/>
+          <text class="flow-label" x="398" y="122">6 · reply row</text>
+          <path id="fe-shape" class="flow-edge sync-edge" d="M 315 268 L 315 198"/>
+          <text class="flow-label" x="222" y="236">7 · logical</text>
+          <text class="flow-label" x="222" y="248">replication</text>
+          <path id="fe-longpoll" class="flow-edge sync-edge" d="M 238 288 C 130 260, 80 160, 88 80"/>
+          <text class="flow-label" x="96" y="200">8 · shape long-poll</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Chat UI <span class="tbl">what the user sees</span></h3>
+      <div class="chat-mock" id="m-chat"></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <div class="stage" id="m-stage"></div>
+    <p id="m-caption"></p>
+  </div>
+
+  <div class="controls">
+    <button class="ctl" id="m-prev">← Back</button>
+    <button class="ctl primary" id="m-next">Next →</button>
+    <div class="progress" id="m-progress"></div>
+    <span class="stepcount" id="m-stepcount"></span>
+    <button class="ctl" id="m-reset">Reset</button>
+  </div>
+  <p style="color: var(--muted); font-size: .78rem; margin-top: 10px;">Tip: use <span class="kbd">←</span> <span class="kbd">→</span> arrow keys to step.</p>
+
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/runtimes/stream.ts">packages/agent/core/runtimes/stream.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/processors.ts">apps/worker/src/processors.ts (processTeamLeadRun)</span>
+    <span class="file-chip" data-path="apps/api/src/streams.ts">apps/api/src/streams.ts</span>
+    <span class="file-chip" data-path="apps/api/src/electric.ts">apps/api/src/electric.ts</span>
+  </div>
+</section>
+
+<!-- ══════════════ 3. DESIGN RULES ══════════════ -->
+<section id="rules">
+  <h2><span class="num">3</span> The rules that keep it robust</h2>
+  <div class="info-cards">
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Dead streams server ≠ dead run</div>
+      <p>The durable-streams client used to retry <b>forever</b> with a concurrency-1 append queue — one unreachable append kept the segment promise pending, <code>/ping</code> reported HealthyBusy, and sessions idled to their 8-hour max, billed the whole time. Now: bounded backoff (4 retries), 30s append deadline, 15s connect deadline — a failure drops the event and warns. Postgres is the source of truth; the live stream is UX telemetry.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>EOF exactly once, at terminal</div>
+      <p><code>closeRunStream</code> EOFs a run's stream only when the run reaches a terminal status — so tailing consumers stop. Segment cleanup deliberately leaves it open: a yielded orchestrator <b>resumes onto the same stream</b>, appending across sessions.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Sub-agents multiplex</div>
+      <p><code>SubAgentRuntime</code> writes a child's events onto the <b>parent's</b> stream writer, so the UI can render a whole run tree's activity from one tail instead of opening a stream per child.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Reads are guarded</div>
+      <p>The streams proxy verifies the requested run actually belongs to the claimed task/project before piping bytes (cross-task IDOR closed). Electric shapes are server-pinned: the client picks a shape key and a scope id, never raw SQL — and task-scoped shapes check thread ownership.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Writes never ride the sync channel</div>
+      <p>Electric is read-only fan-out. All writes go through oRPC routes (user actions) or the worker (agent results), then sync back as row changes. There is no client-side write path to conflict-resolve.</p>
+    </div>
+    <div class="icard">
+      <div class="ic-title"><span class="dot"></span>Roster state is just rows</div>
+      <p><code>project_agent.state</code> flips (working / idle / blocked) happen in <code>run-terminal.ts</code> as guarded UPDATEs and broadcast through the <code>projectAgents</code> shape — the live team view is Postgres all the way down.</p>
+    </div>
+  </div>
+  <div class="files">
+    <span class="file-chip" data-path="packages/agent/core/lib/streams.ts">packages/agent/core/lib/streams.ts (STREAM_BACKOFF, closeRunStream)</span>
+    <span class="file-chip" data-path="packages/agent/core/runtimes/subagent.ts">packages/agent/core/runtimes/subagent.ts</span>
+    <span class="file-chip" data-path="apps/worker/src/run-terminal.ts">apps/worker/src/run-terminal.ts</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Orange dashed = live telemetry (droppable) · blue solid = persisted truth (always converges) · the UI needs both, the system only needs one.
+</footer>
+
+<script>
+/* file chips */
+document.querySelectorAll(".file-chip").forEach(chip => {
+  chip.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(chip.dataset.path);
+      chip.classList.add("copied");
+      setTimeout(() => chip.classList.remove("copied"), 1400);
+    } catch { /* clipboard unavailable on file:// is fine */ }
+  });
+});
+
+/* ════════════ chat flow stepper ════════════ */
+(function () {
+  const steps = [
+    {
+      stage: "Step 1 · User sends a message",
+      cap: "The browser calls an oRPC route (never Electric — writes don't ride the sync channel). The user's message is about to become durable state.",
+      nodes: ["f-browser", "f-api"], edges: ["fe-send"],
+      chat: [{ cls: "user", text: "How is the docking work going?" }],
+    },
+    {
+      stage: "Step 2 · Persist + create the run",
+      cap: "The API inserts the <code>taskMessage</code> row and creates a <code>run</code> row for the Team Lead turn (one-turn-at-a-time guard applies). Postgres now owns the truth of this conversation.",
+      nodes: ["f-api", "f-pg"], edges: ["fe-insert"],
+      chat: [{ cls: "user", text: "How is the docking work going?" }],
+    },
+    {
+      stage: "Step 3 · Dispatch to the worker",
+      cap: "The run is dispatched to an AgentCore session. The worker claims it with the guarded transition (<code>pending → running</code>) — duplicate deliveries drop silently.",
+      nodes: ["f-pg", "f-worker"], edges: ["fe-dispatch"],
+      chat: [{ cls: "user", text: "How is the docking work going?" }],
+    },
+    {
+      stage: "Step 4 · Tokens stream live",
+      cap: "As the lead thinks, <code>StreamRuntime</code>'s <code>TaskStreamWriter</code> appends typed events to the durable stream <code>run-{runId}</code>. This channel is <b>best-effort</b>: if the streams server is unreachable, bounded backoff gives up and drops the event — the run never wedges.",
+      nodes: ["f-worker", "f-streams"], edges: ["fe-tokens"],
+      chat: [
+        { cls: "user", text: "How is the docking work going?" },
+        { cls: "agent tokens", text: "Ada completed her docking run this morning. Compound A showed…", cursor: true, src: "live · durable stream" },
+      ],
+    },
+    {
+      stage: "Step 5 · Browser tails the stream",
+      cap: "The browser tails through the API's authenticated proxy, which first verifies this run actually belongs to the task/project the client claims (closing the cross-task IDOR hole). The user watches the reply type itself out.",
+      nodes: ["f-streams", "f-browser"], edges: ["fe-tokens", "fe-tail"],
+      chat: [
+        { cls: "user", text: "How is the docking work going?" },
+        { cls: "agent tokens", text: "Ada completed her docking run this morning. Compound A showed the strongest binding profile across all three target conformations…", cursor: true, src: "live · durable stream" },
+      ],
+    },
+    {
+      stage: "Step 6 · Reply persists to Postgres",
+      cap: "The turn finishes: the complete reply is written as a <code>taskMessage</code> row and the run reaches terminal. Even if every streamed token was dropped, this row exists — the stream is telemetry, the row is truth.",
+      nodes: ["f-worker", "f-pg"], edges: ["fe-persist"],
+      chat: [
+        { cls: "user", text: "How is the docking work going?" },
+        { cls: "agent tokens", text: "Ada completed her docking run this morning. Compound A showed the strongest binding profile…", src: "live · durable stream" },
+      ],
+    },
+    {
+      stage: "Step 7-8 · Electric syncs it back",
+      cap: "Electric picks the new row off logical replication; the browser's long-poll on the <code>taskMessages</code> shape delivers it into the TanStack DB collection. The streamed preview is replaced by the persisted message — and <code>closeRunStream</code> EOFs the stream so the tail stops.",
+      nodes: ["f-pg", "f-electric", "f-browser"], edges: ["fe-shape", "fe-longpoll"],
+      chat: [
+        { cls: "user", text: "How is the docking work going?" },
+        { cls: "agent final", text: "Ada completed her docking run this morning. Compound A showed the strongest binding profile across all three target conformations. Bo's literature review is still in flight — I'll pulse you when it lands.", src: "persisted · Electric taskMessages shape" },
+      ],
+    },
+  ];
+
+  let idx = 0;
+  const $chat = document.getElementById("m-chat");
+  const $stage = document.getElementById("m-stage");
+  const $caption = document.getElementById("m-caption");
+  const $progress = document.getElementById("m-progress");
+  const $stepcount = document.getElementById("m-stepcount");
+  const $prev = document.getElementById("m-prev");
+  const $next = document.getElementById("m-next");
+
+  steps.forEach(() => {
+    const t = document.createElement("div");
+    t.className = "tick";
+    $progress.appendChild(t);
+  });
+
+  function render() {
+    const s = steps[idx];
+
+    document.querySelectorAll(".flow-node").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".flow-edge").forEach(e => e.classList.remove("active"));
+    s.nodes.forEach(id => document.getElementById(id)?.classList.add("active"));
+    s.edges.forEach(id => document.getElementById(id)?.classList.add("active"));
+
+    $chat.innerHTML = "";
+    s.chat.forEach(m => {
+      const d = document.createElement("div");
+      d.className = `cmsg ${m.cls}`;
+      d.innerHTML = m.text + (m.cursor ? ' <span class="cursor"></span>' : "") +
+        (m.src ? `<span class="src">${m.src}</span>` : "");
+      $chat.appendChild(d);
+    });
+
+    $stage.textContent = s.stage;
+    $caption.innerHTML = s.cap;
+    [...$progress.children].forEach((t, i) => t.classList.toggle("done", i <= idx));
+    $stepcount.textContent = `step ${idx + 1} / ${steps.length}`;
+    $prev.disabled = idx === 0;
+    $next.disabled = idx === steps.length - 1;
+  }
+
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n >= steps.length) return;
+    idx = n;
+    render();
+  }
+  $next.addEventListener("click", () => go(1));
+  $prev.addEventListener("click", () => go(-1));
+  document.getElementById("m-reset").addEventListener("click", () => { idx = 0; render(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") go(1);
+    if (e.key === "ArrowLeft") go(-1);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+packages:
+  - apps/*
+  - packages/*
+# Supply-chain guard: only resolve package versions published at least 7 days
+# ago. Makes local resolution match the policy the Docker builds enforce, so
+# fresh releases can't land in the lockfile and fail the image build, and gives
+# compromised-publish incidents time to be caught and yanked upstream.
+minimumReleaseAge: 10080
+# Refuse tarballs resolved from non-registry sources (git/http/file URLs) in the
+# transitive graph — a hijacked sub-dependency can't redirect installs to a host
+# outside the registry.
+blockExoticSubdeps: true
+# Reject updates that weaken a package's existing provenance/trust level, so a
+# malicious release can't downgrade its way past these settings.
+trustPolicy: no-downgrade
+# Narrow exemptions to the above. Each is a pre-provenance-era release that an
+# upstream package pins exactly, so there is no version we can move to without
+# forcing an unrelated major bump. All three were verified as genuine releases
+# from their long-standing maintainers, not takeovers. Revisit when the pinning
+# parents (@babel/helper-compilation-targets, recharts) widen their ranges.
+#   semver@6.3.1        — pinned via @babel/helper-compilation-targets (^6.3.1)
+#   reselect@5.1.1      — pinned exactly by recharts@3.8.0
+#   undici-types@6.21.0 — pinned via @types/node@22 (~6.21.0)
+# fast-xml-parser@4.5.7 is a different case: the whole 4.x line is published
+# unattested by the same maintainer who published the 4.4.1 we're replacing, and
+# only 5.x (a breaking major the AWS SDK can't take) added provenance. Since the
+# policy is publish-date based, the security patch trips it while the vulnerable
+# version it replaces would not. Excluded so the fix can land.
+trustPolicyExclude:
+  - semver@6.3.1
+  - reselect@5.1.1
+  - undici-types@6.21.0
+  - fast-xml-parser@4.5.7
+overrides:
+  # Pin to the latest published patch — start-plugin-core@1.171.19 references
+  # an unpublished router-generator@1.167.18, which breaks installs.
+  '@tanstack/router-generator': 1.167.17
+  # Force a single ioredis instance so our Redis connections are type- and
+  # instance-compatible with the one bullmq resolves internally.
+  ioredis: ^5.11.1
+  # Security overrides — `next` arrives here only as next-intl's auto-installed
+  # peer, so it pins postcss 8.4.31 (arbitrary file read + path traversal via
+  # source maps) and sharp <0.35.0 (libvips CVEs) with no direct dep to bump.
+  postcss: ^8.5.20
+  sharp: ^0.35.3
+  # The AWS SDK pulls fast-xml-parser 4.4.1, which has a DOCTYPE entity-encoding
+  # bypass (critical) plus two entity-expansion DoS advisories. Held at ^4.5.7 —
+  # the SDK expects the 4.x API, so this fixes all three without a major bump.
+  # One moderate expansion-limit advisory remains open against all of 4.x (fixed
+  # only in >=5.7.0); the SDK can't take that major, and it's a parser-DoS reach
+  # on SDK-internal XML responses, not attacker-supplied input.
+  fast-xml-parser: ^4.5.7
+  # monaco-editor pins dompurify 3.2.7 exactly, which carries 17 open XSS/
+  # sanitizer-bypass advisories. 3.4.12 clears all of them and is API-compatible.
+  dompurify: ^3.4.12
+allowBuilds:
+  '@parcel/watcher': true
+  # Transitive dep of better-auth's bundled prisma adapter — we use drizzle,
+  # so prisma's engine-download scripts never need to run.
+  '@prisma/engines': false
+  '@swc/core': true
+  esbuild: true
+  # Optional native accelerator for bullmq's msgpackr; the pure-JS fallback
+  # is fine for local job payloads (they're just { runId } pointers).
+  msgpackr-extract: false
+  prisma: false
+  sharp: true
+  unrs-resolver: true

@@ -1,0 +1,25 @@
+{
+  "projectName": "web",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "npm",
+  "includeExamples": false,
+  "tailwind": true,
+  "envVarValues": {},
+  "git": false,
+  "install": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "biome",
+    "nitro",
+    "prisma",
+    "db",
+    "oRPC",
+    "shadcn",
+    "t3env",
+    "better-auth",
+    "tanstack-query"
+  ]
+}

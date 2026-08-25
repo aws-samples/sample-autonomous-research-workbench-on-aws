@@ -1,0 +1,72 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalPassThroughEnv": [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_SESSION_TOKEN",
+    "AWS_REGION",
+    "AWS_DEFAULT_REGION"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".output/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "format": {
+      "dependsOn": ["^format"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false,
+      "interactive": true
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    },
+    "//#db:local:up": {
+      "cache": false
+    },
+    "//#db:local:down": {
+      "cache": false
+    },
+    "//#db:local:reset": {
+      "cache": false
+    },
+
+    "synth": {
+      "cache": false
+    },
+    "diff": {
+      "cache": false
+    },
+    "deploy": {
+      "cache": false,
+      "interactive": true
+    },
+    "destroy": {
+      "cache": false
+    },
+    "bootstrap": {
+      "cache": false
+    }
+  }
+}

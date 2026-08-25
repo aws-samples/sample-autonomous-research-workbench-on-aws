@@ -1,0 +1,7 @@
+# Graph stages (write_ontology / extract / write_graph) — pure-python, zip-built.
+# boto3 ships in the Lambda runtime but is pinned here so the SigV4 signer and
+# bedrock-runtime client versions are reproducible in the bundle.
+boto3>=1.35.0
+neo4j>=5.25.0
+# WriteStatus stage upserts per-document ingestion state into Postgres.
+psycopg[binary]>=3.2.0

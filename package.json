@@ -1,0 +1,24 @@
+{
+  "name": "research-workbench",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "db:migrate": "turbo run db:migrate",
+    "db:local:up": "docker compose up -d",
+    "db:local:down": "docker compose down",
+    "db:local:reset": "docker compose down -v && docker compose up -d"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4",
+    "turbo": "^2.9.18",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20"
+  }
+}

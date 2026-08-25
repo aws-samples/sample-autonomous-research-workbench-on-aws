@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: research-workbench-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      # Local dev container only, never deployed.
+      POSTGRES_PASSWORD: postgres  # pragma: allowlist secret
+      POSTGRES_DB: application
+    # Electric requires logical replication to stream changes out of Postgres.
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d application"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  electric:
+    image: electricsql/electric:latest
+    container_name: research-workbench-electric
+    restart: unless-stopped
+    environment:
+      # Local dev container only, never deployed.
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/application  # pragma: allowlist secret  # checkov:skip=CKV_SECRET_4
+      ELECTRIC_INSECURE: "true"
+    ports:
+      - "${ELECTRIC_PORT:-3010}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Electric Streams (durable-streams) server: carries ephemeral, high-frequency
+  # agent token/tool/reasoning deltas. Durable rows still sync via the `electric`
+  # (Electric SQL) service above; this only handles the live agent stream.
+  durable-streams:
+    build:
+      context: ./docker/durable-streams
+    container_name: research-workbench-streams
+    restart: unless-stopped
+    ports:
+      - "${STREAMS_PORT:-4437}:4437"
+    volumes:
+      - streams_data:/data
+
+  memgraph:
+    image: memgraph/memgraph-mage:latest
+    container_name: research-workbench-memgraph
+    restart: unless-stopped
+    command:
+      - --log-level=WARNING
+      - --also-log-to-stderr
+    ports:
+      - "${MEMGRAPH_PORT:-7687}:7687"
+      - "${MEMGRAPH_HTTP_PORT:-7444}:7444"
+    volumes:
+      - memgraph_data:/var/lib/memgraph
+      - memgraph_log:/var/log/memgraph
+      - memgraph_etc:/etc/memgraph
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'RETURN 0;' | mgconsole || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  memgraph-lab:
+    image: memgraph/lab:latest
+    container_name: research-workbench-memgraph-lab
+    restart: unless-stopped
+    environment:
+      QUICK_CONNECT_MG_HOST: memgraph
+      QUICK_CONNECT_MG_PORT: 7687
+    ports:
+      - "${MEMGRAPH_LAB_PORT:-3001}:3000"
+    depends_on:
+      - memgraph
+
+volumes:
+  postgres_data:
+  streams_data:
+  memgraph_data:
+  memgraph_log:
+  memgraph_etc:

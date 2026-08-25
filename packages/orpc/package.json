@@ -1,0 +1,36 @@
+{
+  "name": "@repo/orpc",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./router.ts",
+    "./context": "./context.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agentcore": "^3.1075.0",
+    "@aws-sdk/client-bedrock-agentcore-control": "3.1086.0",
+    "@aws-sdk/client-s3": "3.1076.0",
+    "@aws-sdk/client-s3files": "3.1086.0",
+    "@aws-sdk/client-sesv2": "3.1086.0",
+    "@aws-sdk/client-sfn": "3.734.0",
+    "@aws-sdk/client-ssm": "3.1086.0",
+    "@aws-sdk/credential-providers": "^3.972.56",
+    "@aws-sdk/s3-request-presigner": "3.1076.0",
+    "@orpc/server": "^1.13.6",
+    "@repo/agent": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/graph": "workspace:*",
+    "@repo/queue": "workspace:*",
+    "@repo/streams-protocol": "workspace:*",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^6.0.2"
+  }
+}

@@ -1,0 +1,70 @@
+# Keep the build context small and stable so CDK asset hashes are cache-friendly.
+
+# Dependencies (will be installed inside the image)
+node_modules
+**/node_modules
+
+# Python virtualenvs (installed inside the image; never ship the host venv).
+# The *venv globs also catch prefixed names like temp/pptx_venv.
+.venv
+**/.venv
+venv
+**/venv
+*venv
+**/*venv
+.pytest_cache
+**/.pytest_cache
+__pycache__
+**/__pycache__
+.ruff_cache
+**/.ruff_cache
+.mypy_cache
+**/.mypy_cache
+
+# Build outputs
+.turbo
+**/.turbo
+.next
+**/.next
+.output
+**/.output
+dist
+**/dist
+build
+**/build
+out
+**/out
+coverage
+**/coverage
+
+# CDK
+apps/infra/cdk.out
+
+# VCS / editor / OS
+.git
+.gitignore
+.vscode
+**/.vscode
+.idea
+**/.idea
+.DS_Store
+**/.DS_Store
+
+# Env files (secrets stay out of images; pass via task definition)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docs / READMEs aren't needed at build time
+**/README.md
+
+# Local scratch — decks, icon packages, throwaway venvs. Never part of a build.
+temp/
+.ash/

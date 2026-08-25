@@ -1,0 +1,29 @@
+{
+  "name": "@workbench/worker",
+  "version": "1.0.0",
+  "description": "Multi-agent run executor: serves the Bedrock AgentCore invocation contract, executes orchestrator/sub-agent run segments with @repo/agent, and persists durable state to Postgres.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/agentcore.ts",
+    "start": "tsx src/agentcore.ts",
+    "local": "tsx src/local.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1075.0",
+    "@aws-sdk/client-ssm": "^3.1075.0",
+    "@repo/agent": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/queue": "workspace:*",
+    "@repo/streams-protocol": "workspace:*",
+    "ai": "^6.0.108",
+    "dotenv": "^17.3.1",
+    "tsx": "^4.21.0",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.9.3"
+  }
+}
