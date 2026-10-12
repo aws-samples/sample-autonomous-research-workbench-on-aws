@@ -14,7 +14,7 @@
     "@elysiajs/cors": "^1.4.0",
     "@orpc/openapi": "^1.13.6",
     "@orpc/server": "^1.13.6",
-    "@orpc/zod": "^1.13.6",
+    "@orpc/zod": "^1.14.10",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/orpc": "workspace:*",
