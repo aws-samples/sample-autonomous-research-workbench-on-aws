@@ -27,7 +27,7 @@
     "@repo/graph": "workspace:*",
     "@repo/queue": "workspace:*",
     "@repo/streams-protocol": "workspace:*",
-    "zod": "^4.3.6"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
